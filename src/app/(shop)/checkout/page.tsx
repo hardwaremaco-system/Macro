@@ -17,20 +17,18 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     fullName: profile?.fullName || '',
+    email: user?.email || '', // Added Email Field
     phone: profile?.phone || '',
     deliveryLocation: '',
     paymentMethod: 'pay_on_delivery',
     notes: '',
   });
 
-  // Protect the route: if cart is empty, send them back
   useEffect(() => {
-    if (items.length === 0) {
-      router.push('/cart');
-    }
+    if (items.length === 0) router.push('/cart');
   }, [items, router]);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
@@ -44,30 +42,32 @@ export default function CheckoutPage() {
         userId: user ? user.uid : 'guest',
         customerDetails: {
           fullName: formData.fullName,
+          email: formData.email,
           phone: formData.phone,
           deliveryLocation: formData.deliveryLocation,
         },
         items: items.map(item => ({
-          id: item.id,
-          name: item.name,
-          price: item.price,
-          quantity: item.quantity,
-          image: item.image
+          id: item.id, name: item.name, price: item.price, quantity: item.quantity, image: item.image
         })),
         totalAmount: getCartTotal(),
         paymentMethod: formData.paymentMethod,
         notes: formData.notes,
-        status: 'Pending', // pending, processing, delivered, cancelled
+        status: 'Pending',
         createdAt: serverTimestamp(),
       };
 
       // 2. Save to Firestore 'orders' collection
-      await addDoc(collection(db, 'orders'), orderData);
+      const docRef = await addDoc(collection(db, 'orders'), orderData);
 
-      // 3. Clear the user's cart
+      // 3. Trigger Brevo Emails via our new API
+      await fetch('/api/email/order-confirmation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...orderData, orderId: docRef.id }),
+      });
+
+      // 4. Clear cart & Redirect
       clearCart();
-
-      // 4. Redirect to success page
       router.push('/checkout/success');
     } catch (error) {
       console.error('Error placing order:', error);
@@ -76,21 +76,25 @@ export default function CheckoutPage() {
     }
   };
 
-  if (items.length === 0) return null; // Prevent flicker while redirecting
+  if (items.length === 0) return null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h1 className="text-2xl font-black text-gray-900 mb-8">Checkout</h1>
 
       <form onSubmit={handlePlaceOrder} className="flex flex-col lg:flex-row gap-8">
-        {/* Left Form Section */}
         <div className="flex-1 space-y-6">
+          
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h2 className="text-lg font-black text-gray-900 mb-4 border-b pb-2">Customer Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Full Name</label>
                 <input name="fullName" required value={formData.fullName} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Email Address</label>
+                <input name="email" type="email" required value={formData.email} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="For your receipt" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Phone Number</label>
@@ -107,11 +111,11 @@ export default function CheckoutPage() {
             <h2 className="text-lg font-black text-gray-900 mb-4 border-b pb-2">Payment Method</h2>
             <div className="space-y-3">
               <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                <input type="radio" name="paymentMethod" value="pay_on_delivery" checked={formData.paymentMethod === 'pay_on_delivery'} onChange={handleChange} className="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                <span className="ml-3 font-bold text-gray-900 text-sm">Pay on Delivery</span>
+                <input type="radio" name="paymentMethod" value="pay_on_delivery" checked={formData.paymentMethod === 'pay_on_delivery'} onChange={handleChange} className="w-4 h-4 text-blue-600" />
+                <span className="ml-3 font-bold text-gray-900 text-sm">Pay on Delivery (Cash/MoMo)</span>
               </label>
               <label className="flex items-center p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                <input type="radio" name="paymentMethod" value="store_pickup" checked={formData.paymentMethod === 'store_pickup'} onChange={handleChange} className="w-4 h-4 text-blue-600 focus:ring-blue-500" />
+                <input type="radio" name="paymentMethod" value="store_pickup" checked={formData.paymentMethod === 'store_pickup'} onChange={handleChange} className="w-4 h-4 text-blue-600" />
                 <span className="ml-3 font-bold text-gray-900 text-sm">Pay at Store (Pickup)</span>
               </label>
             </div>
@@ -128,7 +132,7 @@ export default function CheckoutPage() {
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-inner sticky top-24">
             <h2 className="text-lg font-black text-gray-900 mb-4 border-b border-gray-200 pb-2">Your Order</h2>
             
-            <ul className="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2 scrollbar-hide">
+            <ul className="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2">
               {items.map((item) => (
                 <li key={item.id} className="flex justify-between text-sm">
                   <span className="text-gray-600">
