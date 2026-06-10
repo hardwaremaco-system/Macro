@@ -3,14 +3,15 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { ShoppingCart, Search, User, Menu, X } from 'lucide-react';
-import { useCartStore } from '@/store/useCartStore';
-import { useAuth } from '@/context/AuthContext';
+import { ShoppingCart, User, Menu, X } from 'lucide-react';
+// Strict relative paths
+import { useCartStore } from '../../store/useCartStore';
+import { useAuth } from '../../context/AuthContext';
+import GlobalSearch from './GlobalSearch';
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
-  // Connect dynamically to our state managers
   const cartCount = useCartStore((state) => state.getCartCount());
   const { user } = useAuth();
 
@@ -31,18 +32,9 @@ export default function Header() {
           </Link>
         </div>
 
-        {/* Center: Desktop Search (Hidden on Mobile) */}
+        {/* Center: Algolia Global Search (Hidden on Mobile) */}
         <div className="hidden md:flex flex-1 max-w-2xl mx-8">
-          <div className="w-full flex">
-            <input 
-              type="text" 
-              placeholder="Search products, brands, and categories..." 
-              className="w-full border border-gray-300 border-r-0 rounded-l-lg px-4 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500"
-            />
-            <button className="bg-amber-500 text-white px-4 rounded-r-lg hover:bg-amber-600 transition-colors flex items-center justify-center">
-              <Search size={20} />
-            </button>
-          </div>
+          <GlobalSearch />
         </div>
 
         {/* Right: User & Cart Actions */}
@@ -70,6 +62,10 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden bg-white border-b border-gray-200">
           <nav className="flex flex-col px-4 pt-2 pb-4 space-y-2">
+            {/* Inject search into mobile menu for now */}
+            <div className="py-2">
+              <GlobalSearch />
+            </div>
             <Link href="/categories" className="py-2 text-sm font-medium text-gray-700 border-b border-gray-100">All Categories</Link>
             <Link href="/promotions" className="py-2 text-sm font-medium text-gray-700 border-b border-gray-100">Promotions & Offers</Link>
             <Link href="/news" className="py-2 text-sm font-medium text-gray-700 border-b border-gray-100">News & Events</Link>
