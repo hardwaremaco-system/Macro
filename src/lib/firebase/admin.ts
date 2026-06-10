@@ -1,8 +1,10 @@
+// src/lib/firebase/admin.ts
+
 import { initializeApp, getApps, cert, App } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import { getFirestore } from 'firebase-admin/firestore';
 
-// We must format the private key to handle the literal newline characters properly
+// Vercel sometimes passes newline characters as literal strings. We must format them properly for the private key to work.
 const privateKey = process.env.FIREBASE_PRIVATE_KEY
   ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n')
   : undefined;
@@ -15,16 +17,16 @@ const adminConfig = {
 
 let adminApp: App;
 
-// Singleton pattern for the admin SDK to prevent hot-reload crashes
+// Initialize Firebase Admin (Singleton pattern)
 if (!getApps().length) {
   adminApp = initializeApp({
     credential: cert(adminConfig),
   });
 } else {
-  // If already initialized, use the existing app
   adminApp = getApps()[0];
 }
 
+// Initialize specific Admin services to bypass security rules on the server
 const adminAuth = getAuth(adminApp);
 const adminDb = getFirestore(adminApp);
 
