@@ -1,26 +1,49 @@
 // src/app/(shop)/page.tsx
-import React from 'react';
-import Link from 'next/link';
-import HeroSection from '@/components/shop/HeroSection';
-import TrustStrip from '@/components/shop/TrustStrip';
-import CategoryRow from '@/components/shop/CategoryRow';
-import ProductCard, { ProductData } from '@/components/shop/ProductCard';
-import PromotionsBanner from '@/components/shop/PromotionsBanner';
-import TrustedBrands from '@/components/shop/TrustedBrands';
-import WhyChooseUs from '@/components/shop/WhyChooseUs';
-import NewsEventsPreview from '@/components/shop/NewsEventsPreview';
-import Testimonials from '@/components/shop/Testimonials';
+'use client';
 
-// Temporary mock data. Later, this will fetch from the Algolia index or Firestore.
-const featuredProducts: ProductData[] = [
-  { id: 'p1', name: 'Tororo Cement 50kg (CEM IV/B)', slug: 'tororo-cement-50kg', price: 35000, image: '🧱', stock: 150 },
-  { id: 'p2', name: 'Supermatch Roofing Iron Sheets (Gauge 28)', slug: 'supermatch-iron-sheets', price: 42000, originalPrice: 45000, image: '🏠', stock: 50, isPromo: true },
-  { id: 'p3', name: 'PVC Pipe Heavy Duty (1.5 inch x 6m)', slug: 'pvc-pipe-1-5-inch', price: 18000, image: '🚰', stock: 5 },
-  { id: 'p4', name: 'Veto Electrical Cable (1.5mm Twin)', slug: 'veto-cable-1-5mm', price: 120000, image: '⚡', stock: 20 },
-  { id: 'p5', name: 'Heavy Duty Galvanized Wheelbarrow', slug: 'heavy-duty-wheelbarrow', price: 150000, image: '🛒', stock: 12 },
-];
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+
+// Forced relative paths to bypass alias failure
+import HeroSection from '../../components/shop/HeroSection';
+import TrustStrip from '../../components/shop/TrustStrip';
+import CategoryRow from '../../components/shop/CategoryRow';
+import ProductCard, { ProductData } from '../../components/shop/ProductCard';
+import PromotionsBanner from '../../components/shop/PromotionsBanner';
+import TrustedBrands from '../../components/shop/TrustedBrands';
+import WhyChooseUs from '../../components/shop/WhyChooseUs';
+import NewsEventsPreview from '../../components/shop/NewsEventsPreview';
+import Testimonials from '../../components/shop/Testimonials';
+import { db } from '../../lib/firebase/client';
 
 export default function HomePage() {
+  const [featuredProducts, setFeaturedProducts] = useState<ProductData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchLatestProducts() {
+      try {
+        // Fetch the 10 most recently added products from Firestore
+        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(10));
+        const snapshot = await getDocs(q);
+        
+        const productsData = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        })) as ProductData[];
+        
+        setFeaturedProducts(productsData);
+      } catch (error) {
+        console.error('Error fetching live products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchLatestProducts();
+  }, []);
+
   return (
     <div className="flex flex-col gap-6 pb-0 overflow-hidden">
       
@@ -45,16 +68,27 @@ export default function HomePage() {
       {/* 4. Product Categories */}
       <CategoryRow />
 
-      {/* 5. Featured Products */}
+      {/* 5. LIVE Featured Products */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-black text-gray-900">Featured Products</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
+        
+        {loading ? (
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+        ) : featuredProducts.length === 0 ? (
+          <div className="bg-white border border-dashed border-gray-300 rounded-xl p-8 text-center text-gray-500">
+            No products available yet. Add some from the Admin Dashboard!
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+            {featuredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* 6. Promotions & Special Offers */}
