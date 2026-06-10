@@ -1,8 +1,11 @@
+// src/lib/firebase/client.ts
+
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -12,11 +15,13 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-// Singleton pattern: only initialize the app if no apps exist
+// Initialize Firebase securely (Singleton pattern prevents duplicate apps during Next.js hot reloads)
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 
+// Initialize specific Firebase services
 const auth = getAuth(app);
 const db = getFirestore(app);
 const storage = getStorage(app);
 
+// Export them for use in your React components
 export { app, auth, db, storage };
