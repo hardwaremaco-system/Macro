@@ -1,42 +1,45 @@
-// src/app/(shop)/layout.tsx
+// src/app/(shop)/page.tsx
 import React from 'react';
+import HeroSection from '@/components/shop/HeroSection';
+import TrustStrip from '@/components/shop/TrustStrip';
 
-export default function ShopLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen">
-      {/* Global Customer Top Alert Notification Banner */}
-      <div className="bg-blue-900 text-white text-center py-2 px-4 text-xs font-medium tracking-wide">
-        📦 Same-day store pick-up & region-wide delivery services available!
+    <div className="flex flex-col gap-6 pb-12">
+      {/* 1. Hero Banner Slider / Bento */}
+      <HeroSection />
+
+      {/* 2. Product Search Bar (Mobile focus - Desktop will have it in the header) */}
+      <div className="md:hidden px-4">
+        <div className="bg-white border border-gray-200 rounded-lg p-2 flex items-center shadow-sm">
+          <span className="text-gray-400 mx-2">🔍</span>
+          <input 
+            type="text" 
+            placeholder="Search products, brands, and categories..." 
+            className="w-full outline-none text-sm bg-transparent"
+          />
+        </div>
       </div>
 
-      {/* Main Header Anchor (We will fill this component in our next step) */}
-      <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <span className="text-xl font-black text-blue-900 tracking-tight">MACRO <span className="text-amber-500">HARDWARE</span></span>
-          <nav className="hidden md:flex space-x-8 text-sm font-medium text-gray-600">
-            <span className="cursor-not-allowed">Categories</span>
-            <span className="cursor-not-allowed">Promotions</span>
-            <span className="cursor-not-allowed">News & Events</span>
-          </nav>
-          <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-400">🛒</div>
-        </div>
-      </header>
+      {/* 3. Trust Strip */}
+      <TrustStrip />
 
-      {/* Dynamic Content Mount point */}
-      <main className="flex-grow bg-gray-50">
-        {children}
-      </main>
-
-      {/* Global Structural Footer */}
-      <footer className="bg-gray-900 text-gray-400 text-xs py-6 border-t border-gray-800 text-center">
-        <div className="max-w-7xl mx-auto px-4">
-          <p>© {new Date().getFullYear()} Macro Hardware Engine. All rights reserved.</p>
+      {/* 4. Product Categories (Placeholder) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <h2 className="text-xl font-black text-gray-900 mb-4">Top Categories</h2>
+        <div className="h-32 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
+          [Categories Component Pending]
         </div>
-      </footer>
+      </section>
+
+      {/* 5. Featured Products (Placeholder) */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+        <h2 className="text-xl font-black text-gray-900 mb-4">Featured Products</h2>
+        <div className="h-64 bg-gray-200 rounded-xl flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
+          [Product Grid Component Pending]
+        </div>
+      </section>
+
     </div>
   );
 }
