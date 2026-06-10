@@ -4,7 +4,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
-import { useCartStore } from '@/store/useCartStore';
+// Strict relative path to prevent Vercel alias errors
+import { useCartStore } from '../../store/useCartStore';
 
 export interface ProductData {
   id: string;
@@ -21,17 +22,8 @@ export default function ProductCard({ product }: { product: ProductData }) {
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevent navigating to the product page when clicking the button
-    addItem({
-      id: product.id,
-      name: product.name,
-      slug: product.slug,
-      price: product.price,
-      image: product.image,
-      stock: product.stock,
-    }, 1);
-    
-    // In the future, we can add a toast notification here
+    e.preventDefault(); // Prevents the Link from navigating when clicking the button
+    addItem({ ...product }, 1);
     alert(`${product.name} added to cart!`);
   };
 
@@ -44,19 +36,27 @@ export default function ProductCard({ product }: { product: ProductData }) {
       
       {/* Promotion Badge */}
       {product.isPromo && discountPercentage > 0 && (
-        <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wide">
+        <div className="absolute top-2 left-2 z-10 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-sm uppercase tracking-wide shadow-sm">
           -{discountPercentage}%
         </div>
       )}
 
-      {/* Image Container (Using standard img until Cloudinary is wired up) */}
-      <div className="relative w-full aspect-square bg-gray-50 p-4 flex items-center justify-center">
-        <div className="text-6xl group-hover:scale-110 transition-transform duration-300">
-          {product.image}
-        </div>
+      {/* Image Container: Safely handles both Cloudinary URLs and Placeholder Emojis */}
+      <div className="relative w-full aspect-square bg-gray-50 flex items-center justify-center overflow-hidden border-b border-gray-100">
+        {product.image.startsWith('http') ? (
+          <img 
+            src={product.image} 
+            alt={product.name} 
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          />
+        ) : (
+          <div className="text-6xl group-hover:scale-110 transition-transform duration-300">
+            {product.image}
+          </div>
+        )}
       </div>
 
-      {/* Content */}
+      {/* Product Content */}
       <div className="p-3 flex flex-col flex-grow">
         <h3 className="text-sm font-medium text-gray-800 line-clamp-2 leading-tight min-h-[40px]">
           {product.name}
@@ -73,7 +73,7 @@ export default function ProductCard({ product }: { product: ProductData }) {
           )}
         </div>
 
-        {/* Stock Indicator & Action */}
+        {/* Stock Indicator & Action Button */}
         <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
           <span className={`text-[10px] font-bold uppercase ${product.stock > 10 ? 'text-emerald-500' : 'text-orange-500'}`}>
             {product.stock > 0 ? (product.stock > 10 ? 'In Stock' : `Only ${product.stock} left`) : 'Out of Stock'}
@@ -82,7 +82,7 @@ export default function ProductCard({ product }: { product: ProductData }) {
           <button 
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-50 disabled:hover:text-blue-600"
           >
             <ShoppingCart size={16} strokeWidth={2.5} />
           </button>
