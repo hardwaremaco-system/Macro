@@ -3,7 +3,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { Plus, Edit, Trash2, Search, Package, X, AlertCircle } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Package, X, AlertCircle, UploadCloud } from 'lucide-react';
+import { CldUploadWidget } from 'next-cloudinary';
 // Strict relative path
 import { db } from '../../../../lib/firebase/client';
 
@@ -20,21 +21,17 @@ export default function AdminProductsPage() {
     originalPrice: '',
     stock: '',
     category: 'Cement',
-    image: '📦', // Placeholder emoji until Cloudinary is wired up
+    image: '', 
     isPromo: false,
   };
   const [formData, setFormData] = useState(initialForm);
 
-  // Fetch Products
   const fetchProducts = async () => {
     setLoading(true);
     try {
       const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
-      const productsData = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      const productsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       setProducts(productsData);
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -43,11 +40,8 @@ export default function AdminProductsPage() {
     }
   };
 
-  useEffect(() => {
-    fetchProducts();
-  }, []);
+  useEffect(() => { fetchProducts(); }, []);
 
-  // Handle Form Input
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
     if (type === 'checkbox') {
@@ -58,15 +52,16 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Add New Product
   const handleAddProduct = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!formData.image) {
+      alert('Please upload a product image first.');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
-      // Auto-generate a URL-friendly slug from the product name
       const slug = formData.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-
       await addDoc(collection(db, 'products'), {
         name: formData.name,
         slug: slug,
@@ -81,7 +76,7 @@ export default function AdminProductsPage() {
 
       setIsModalOpen(false);
       setFormData(initialForm);
-      fetchProducts(); // Refresh the table
+      fetchProducts();
     } catch (error) {
       console.error('Error adding product:', error);
       alert('Failed to add product.');
@@ -90,59 +85,37 @@ export default function AdminProductsPage() {
     }
   };
 
-  // Delete Product
   const handleDelete = async (id: string, name: string) => {
-    if (!confirm(`Are you absolutely sure you want to delete ${name}? This cannot be undone.`)) return;
-    
+    if (!confirm(`Delete ${name}?`)) return;
     try {
       await deleteDoc(doc(db, 'products', id));
-      setProducts(products.filter(product => product.id !== id));
+      setProducts(products.filter(p => p.id !== id));
     } catch (error) {
-      console.error('Error deleting product:', error);
       alert('Failed to delete product.');
     }
   };
 
   return (
     <div className="flex flex-col h-full relative">
-      
-      {/* Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Product Inventory</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage your catalogue, pricing, and stock levels.</p>
+          <p className="text-sm text-gray-500 mt-1">Manage your catalogue and stock levels.</p>
         </div>
-        
-        <div className="flex items-center gap-3">
-          <div className="relative">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search size={16} className="text-gray-400" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search products..." 
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
-            />
-          </div>
-          <button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition-colors flex items-center shadow-sm whitespace-nowrap"
-          >
-            <Plus size={18} className="mr-2" /> Add Product
-          </button>
-        </div>
+        <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm">
+          <Plus size={18} className="mr-2" /> Add Product
+        </button>
       </div>
 
-      {/* Products Table */}
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 overflow-hidden flex flex-col">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                <th className="px-6 py-4">Product Details</th>
+                <th className="px-6 py-4">Product</th>
                 <th className="px-6 py-4">Category</th>
                 <th className="px-6 py-4">Price (UGX)</th>
-                <th className="px-6 py-4">Stock Status</th>
+                <th className="px-6 py-4">Stock</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -155,102 +128,105 @@ export default function AdminProductsPage() {
                   </td>
                 </tr>
               ) : products.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
-                      <Package size={24} />
+                 <tr>
+                   <td colSpan={5} className="px-6 py-12 text-center">
+                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                       <Package size={24} />
+                     </div>
+                     <p className="text-gray-500 font-medium">Your inventory is empty.</p>
+                   </td>
+                 </tr>
+              ) : products.map((product) => (
+                <tr key={product.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="px-6 py-4 flex items-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex items-center justify-center mr-3 border border-gray-200 flex-shrink-0">
+                      {product.image.startsWith('http') ? (
+                        <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-2xl">{product.image}</span>
+                      )}
                     </div>
-                    <p className="text-gray-500 font-medium">Your inventory is empty.</p>
+                    <div>
+                      <div className="text-sm font-bold text-gray-900 line-clamp-2">{product.name}</div>
+                      {product.isPromo && (
+                        <span className="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-black uppercase rounded-sm tracking-wider">
+                          On Promotion
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4 text-sm text-gray-600">{product.category}</td>
+                  <td className="px-6 py-4">
+                    <div className="text-sm font-black text-gray-900">{product.price?.toLocaleString()}</div>
+                    {product.originalPrice && (
+                      <div className="text-xs text-gray-400 line-through">{product.originalPrice?.toLocaleString()}</div>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span className={`text-xs font-bold px-2 py-1 rounded flex items-center w-max ${product.stock <= 0 ? 'bg-red-50 text-red-600' : product.stock < 10 ? 'bg-amber-50 text-amber-600' : 'bg-green-50 text-green-600'}`}>
+                      {product.stock <= 0 || product.stock < 10 ? <AlertCircle size={14} className="mr-1" /> : null}
+                      {product.stock}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end space-x-2">
+                      <button className="p-1.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors title='Edit'">
+                        <Edit size={16} />
+                      </button>
+                      <button onClick={() => handleDelete(product.id, product.name)} className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-600 hover:text-white transition-colors title='Delete'">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
-              ) : (
-                products.map((product) => (
-                  <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                    
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-xl mr-3 border border-gray-200">
-                          {product.image}
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-gray-900">{product.name}</div>
-                          {product.isPromo && (
-                            <span className="inline-block mt-1 px-2 py-0.5 bg-red-100 text-red-700 text-[10px] font-black uppercase rounded-sm tracking-wider">
-                              On Promotion
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="px-6 py-4 text-sm text-gray-600">
-                      {product.category}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <div className="text-sm font-black text-gray-900">
-                        {product.price?.toLocaleString()}
-                      </div>
-                      {product.originalPrice && (
-                        <div className="text-xs text-gray-400 line-through">
-                          {product.originalPrice?.toLocaleString()}
-                        </div>
-                      )}
-                    </td>
-
-                    <td className="px-6 py-4">
-                      <div className="flex items-center">
-                        {product.stock <= 0 ? (
-                          <span className="text-red-600 flex items-center text-xs font-bold bg-red-50 px-2 py-1 rounded">
-                            <AlertCircle size={14} className="mr-1" /> Out of Stock
-                          </span>
-                        ) : product.stock < 10 ? (
-                          <span className="text-amber-600 flex items-center text-xs font-bold bg-amber-50 px-2 py-1 rounded">
-                            <AlertCircle size={14} className="mr-1" /> Low Stock ({product.stock})
-                          </span>
-                        ) : (
-                          <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded">
-                            In Stock ({product.stock})
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end space-x-2">
-                        <button className="p-1.5 bg-gray-100 text-gray-600 rounded hover:bg-gray-200 transition-colors title='Edit'">
-                          <Edit size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleDelete(product.id, product.name)}
-                          className="p-1.5 bg-red-50 text-red-600 rounded hover:bg-red-600 hover:text-white transition-colors title='Delete'"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    </td>
-
-                  </tr>
-                ))
-              )}
+              ))}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* Add Product Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
           <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
               <h2 className="text-lg font-black text-gray-900">Add New Product</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors">
-                <X size={24} />
-              </button>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors"><X size={24} /></button>
             </div>
             
             <form onSubmit={handleAddProduct} className="p-6 overflow-y-auto">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                {/* Image Upload Widget Area using Secure Signature Endpoint */}
+                <div className="md:col-span-2 mb-2">
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Product Image</label>
+                  {formData.image ? (
+                    <div className="relative w-32 h-32 rounded-xl overflow-hidden border-2 border-blue-500 shadow-sm">
+                      <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
+                      <button type="button" onClick={() => setFormData({ ...formData, image: '' })} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full text-xs hover:bg-red-600 transition-colors">
+                        <X size={12}/>
+                      </button>
+                    </div>
+                  ) : (
+                    <CldUploadWidget 
+                      signatureEndpoint="/api/cloudinary/sign"
+                      onSuccess={(result: any) => {
+                        setFormData({ ...formData, image: result.info.secure_url });
+                      }}
+                    >
+                      {({ open }) => (
+                        <button 
+                          type="button" 
+                          onClick={() => open()} 
+                          className="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors"
+                        >
+                          <UploadCloud size={32} className="mb-2" />
+                          <span className="text-sm font-bold">Click to securely upload image</span>
+                        </button>
+                      )}
+                    </CldUploadWidget>
+                  )}
+                </div>
+
                 <div className="md:col-span-2">
                   <label className="block text-sm font-bold text-gray-700 mb-1">Product Name</label>
                   <input name="name" required value={formData.name} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Tororo Cement 50kg" />
@@ -296,10 +272,10 @@ export default function AdminProductsPage() {
               </div>
 
               <div className="mt-8 flex justify-end gap-3">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                   Cancel
                 </button>
-                <button type="submit" disabled={isSubmitting} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center">
+                <button type="submit" disabled={isSubmitting} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center transition-colors">
                   {isSubmitting ? 'Saving...' : 'Save Product'}
                 </button>
               </div>
