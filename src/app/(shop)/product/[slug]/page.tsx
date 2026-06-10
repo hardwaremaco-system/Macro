@@ -95,15 +95,25 @@ export default function ProductDetailsPage() {
       <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col md:flex-row">
         
         {/* Left: Product Image */}
-        <div className="w-full md:w-1/2 bg-gray-50 p-8 sm:p-16 flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-200 relative">
+        <div className="w-full md:w-1/2 bg-gray-50 flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-200 relative overflow-hidden aspect-square sm:aspect-auto">
           {product.isPromo && discountPercentage > 0 && (
             <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-sm uppercase tracking-wider shadow-sm">
               Save {discountPercentage}%
             </div>
           )}
-          <div className="text-[150px] sm:text-[200px] transform hover:scale-105 transition-transform duration-300">
-            {product.image}
-          </div>
+          
+          {/* Dynamically render Cloudinary URL or fallback emoji */}
+          {product.image?.startsWith('http') ? (
+            <img 
+              src={product.image} 
+              alt={product.name} 
+              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
+            />
+          ) : (
+            <div className="text-[150px] sm:text-[200px] transform hover:scale-105 transition-transform duration-300">
+              {product.image}
+            </div>
+          )}
         </div>
 
         {/* Right: Product Details */}
