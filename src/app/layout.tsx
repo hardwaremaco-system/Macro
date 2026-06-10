@@ -1,33 +1,16 @@
 // src/app/layout.tsx
 import React from 'react';
-import type { Metadata, Viewport } from 'next';
+import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from '../context/AuthContext';
+// THIS IS THE MOST IMPORTANT LINE IN THE ENTIRE APP
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
-  title: {
-    default: 'Macro Hardware | Premium Building & Construction Supplies',
-    template: '%s | Macro Hardware',
-  },
-  description: 'Shop cement, roofing sheets, plumbing fixtures, electrical appliances, tools, and high-quality safety gear at Macro Hardware.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
-  alternates: {
-    canonical: '/',
-  },
-  robots: {
-    index: true,
-    follow: true,
-  },
-};
-
-export const viewport: Viewport = {
-  width: 'device-width',
-  initialScale: 1,
-  maximumScale: 1,
-  themeColor: '#1e3a8a', // Corporate deep blue brand identity
+  title: 'Macro Hardware',
+  description: 'Premium Building & Construction Supplies',
 };
 
 export default function RootLayout({
@@ -37,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className={`${inter.variable} scroll-smooth`}>
-      <body className="font-sans antialiased bg-gray-50 text-gray-900 flex flex-col min-height-screen">
+      <body className="font-sans antialiased bg-gray-50 text-gray-900 flex flex-col min-h-screen">
         <AuthProvider>
           <div className="flex flex-col flex-grow">
             {children}
