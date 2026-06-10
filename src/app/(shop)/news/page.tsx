@@ -1,0 +1,102 @@
+// src/app/(shop)/news/page.tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { Calendar, FileText } from 'lucide-react';
+// Strict relative path
+import { db } from '../../../lib/firebase/client';
+
+export default function PublicNewsPage() {
+  const [news, setNews] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchNews() {
+      try {
+        const q = query(collection(db, 'news'), where('isActive', '==', true));
+        const snapshot = await getDocs(q);
+        const newsItems = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        newsItems.sort((a: any, b: any) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+        setNews(newsItems);
+      } catch (error) {
+        console.error('Error fetching news:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchNews();
+  }, []);
+
+  return (
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div className="text-center max-w-3xl mx-auto mb-12">
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4 flex items-center justify-center">
+          <FileText className="mr-3 text-blue-600" size={36} /> News & Events
+        </h1>
+        <p className="text-gray-600">
+          Stay updated with the latest product arrivals, store announcements, and construction events happening at Macro Hardware.
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="flex justify-center items-center py-20">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      ) : news.length === 0 ? (
+        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+          <FileText size={48} className="mx-auto text-gray-300 mb-4" />
+          <h3 className="text-lg font-bold text-gray-900">No news published yet</h3>
+          <p className="text-gray-500">Check back later for updates from our team.</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {news.map((item) => (
+            <div key={item.id} className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all border border-gray-100 flex flex-col group">
+              <div className="w-full h-56 overflow-hidden relative bg-gray-100">
+                <img 
+                  src={item.image} 
+                  alt={item.title} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-4 left-4">
+                  <span className={`px-3 py-1.5 rounded-md text-xs font-black uppercase tracking-wider shadow-md ${item.type === 'Event' ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white'}`}>
+                    {item.type}
+                  </span>
+                </div>
+              </div>
+              
+              <div className="p-6 flex flex-col flex-grow">
+                {item.type === 'Event' && item.eventDate && (
+                  <div className="flex items-center text-xs font-bold text-gray-500 mb-3 bg-gray-50 w-fit px-2 py-1 rounded">
+                    <Calendar size={14} className="mr-1.5 text-purple-600" />
+                    {new Date(item.eventDate).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
+                  </div>
+                )}
+                
+                <h3 className="text-xl font-black text-gray-900 mb-3 leading-snug">
+                  {item.title}
+                </h3>
+                
+                <p className="text-gray-600 text-sm mb-6 flex-grow line-clamp-3">
+                  {item.excerpt || item.content?.substring(0, 100) + '...'}
+                </p>
+
+                <div className="pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <span className="text-xs font-bold text-gray-400">
+                    {item.createdAt?.toDate ? item.createdAt.toDate().toLocaleDateString() : 'Just now'}
+                  </span>
+                  {/* Note: The full article view is optional, but we can hook it up later! */}
+                  <button className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                    Read Article &rarr;
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
