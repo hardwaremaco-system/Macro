@@ -20,6 +20,8 @@ export default function HomePage() {
 {/* 7. TRUSTED BRANDS SCROLLER */}
       <TrustedBrands />
 
+{/* 4. FEATURED PRODUCTS (Controlled by Admin Panel) */}
+      <FeaturedProducts />
 
 {/* 4. SHOP BY CATEGORY (2x3 Grid with Transparent Photos) */}
       <div className="bg-white border-y border-gray-200">
@@ -28,8 +30,8 @@ export default function HomePage() {
 
       {/* 2. PROMOTIONS BANNER */}
       <PromotionsBanner />
-{/* 4. FEATURED PRODUCTS (Controlled by Admin Panel) */}
-      <FeaturedProducts />
+
+
 
       {/* 3. LATEST ADDED PRODUCTS */}
       <LatestProducts />
