@@ -5,7 +5,6 @@ import { ArrowRight } from 'lucide-react';
 
 export default function HeroSection() {
   return (
-    {/* Reduced mobile padding (pt-10 pb-12) but kept desktop exactly the same (lg:pt-32 lg:pb-40) */}
     <section className="relative bg-gray-900 text-white pt-10 pb-12 sm:pt-20 sm:pb-24 lg:pt-32 lg:pb-40 overflow-hidden">
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
@@ -22,12 +21,10 @@ export default function HeroSection() {
           Building the Future of the <span className="text-amber-500">Western Region.</span>
         </h1>
         
-        {/* Adjusted mobile margin-bottom (mb-2) since the buttons are gone, preventing an awkward empty gap */}
         <p className="text-lg sm:text-xl text-gray-300 mb-2 sm:mb-10 max-w-2xl leading-relaxed">
           Premium cement, roofing, plumbing, and construction materials. Order online and pick at the store with ease.
         </p>
 
-        {/* The 'hidden sm:flex' class completely removes this button block on mobile, but keeps it on tablets and desktops */}
         <div className="hidden sm:flex flex-row gap-4 w-auto">
           <Link href="/categories" className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center">
             Shop Materials <ArrowRight size={20} className="ml-2" />
