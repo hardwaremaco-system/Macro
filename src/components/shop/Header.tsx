@@ -15,7 +15,6 @@ export default function Header() {
   const cartCount = useCartStore((state) => state.getCartCount());
   const { user } = useAuth();
 
-  // Lock body scroll when mobile menu is open
   useEffect(() => {
     if (isMobileMenuOpen) {
       document.body.style.overflow = 'hidden';
@@ -28,23 +27,13 @@ export default function Header() {
 
   return (
     <>
-      {/* Fixed Header without scroll animations */}
       <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           
-          {/* Main Header Row */}
           <div className="h-12 md:h-16 flex items-center justify-between">
             
-            {/* Left: Mobile Menu Toggle & Logo + Text */}
-            <div className="flex items-center">
-              <button 
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="md:hidden mr-2 p-1.5 text-gray-900 hover:text-blue-600 transition-colors"
-                aria-label="Open Menu"
-              >
-                <Menu size={24} strokeWidth={2.5} />
-              </button>
-              
+            {/* Left: Logo + Text */}
+            <div className="flex items-center pl-1 md:pl-0">
               <Link href="/" className="flex items-center" onClick={closeMenu}>
                 <img src="/logo.png" alt="Logo" className="h-6 md:h-9 object-contain mr-2" />
                 <span className="text-[14px] md:text-lg font-black tracking-tight text-gray-900 whitespace-nowrap">
@@ -53,13 +42,13 @@ export default function Header() {
               </Link>
             </div>
 
-            {/* Center: Desktop Global Search (Hidden on Mobile) */}
+            {/* Center: Desktop Global Search */}
             <div className="hidden md:flex flex-1 max-w-2xl mx-8">
               <GlobalSearch />
             </div>
 
-            {/* Right: User & Cart Actions */}
-            <div className="flex items-center space-x-3 md:space-x-6 text-gray-700 pr-1 md:pr-0">
+            {/* Right: User, Cart & Mobile Hamburger */}
+            <div className="flex items-center space-x-4 md:space-x-6 text-gray-700 pr-1 md:pr-0">
               <Link href={user ? "/profile" : "/login"} className="hidden md:flex flex-col items-center hover:text-blue-600 transition-colors">
                 <User size={20} />
                 <span className="text-[10px] font-bold mt-1">
@@ -76,10 +65,18 @@ export default function Header() {
                   </span>
                 )}
               </Link>
+
+              {/* Mobile Hamburger Menu */}
+              <button 
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="md:hidden p-1.5 text-gray-900 hover:text-blue-600 transition-colors"
+                aria-label="Open Menu"
+              >
+                <Menu size={24} strokeWidth={2.5} />
+              </button>
             </div>
           </div>
 
-          {/* Mobile Search Bar Row */}
           <div className="md:hidden pb-2 px-1">
             <GlobalSearch />
           </div>
@@ -87,10 +84,7 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Spacer to prevent content from jumping under the fixed header */}
       <div className="h-[88px] md:h-16 w-full shrink-0"></div>
-
-      {/* --- Slide-in Mobile Menu (Hamburger Drawer) --- */}
       
       <div 
         className={`fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 transition-opacity duration-300 ${
@@ -99,9 +93,10 @@ export default function Header() {
         onClick={closeMenu}
       />
 
+      {/* Slide-in Drawer from RIGHT */}
       <div 
-        className={`fixed top-0 left-0 h-full w-[80%] max-w-[300px] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
-          isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 right-0 h-full w-[80%] max-w-[300px] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
+          isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
       >
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
