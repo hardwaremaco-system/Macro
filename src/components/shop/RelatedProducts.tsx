@@ -37,12 +37,12 @@ export default function RelatedProducts({ category, currentProductId }: { catego
   if (loading || products.length === 0) return null;
 
   return (
-    // Gray background container with yellow top border divider
-    <div className="mt-16 bg-gray-50 border-t-[3px] border-yellow-400 py-12">
+    // Gray background container with blue top border divider
+    <div className="mt-16 bg-gray-50 border-t-[3px] border-blue-600 py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Yellow heading */}
-        <h2 className="text-lg font-black text-yellow-500 mb-6 uppercase tracking-wide">
+
+        {/* Black heading */}
+        <h2 className="text-lg font-black text-black mb-6 uppercase tracking-wide">
           You Might Also Like
         </h2>
 
