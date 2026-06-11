@@ -37,15 +37,13 @@ export default function StoreLocationMap() {
               To get your exact shop pin: Go to Google Maps -> Search your shop -> Click "Share" -> Click "Embed a map" -> Copy the src URL and paste it here!
             */}
             <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d31911.396347048123!2d29.970220641142504!3d-1.2483861502476572!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x19dca71db75765f5%3A0x8e8bb33f912c0194!2sKabale%2C%20Uganda!5e0!3m2!1sen!2sus!4v1718080000000!5m2!1sen!2sus"
-              width="100%"
-              height="100%"
-              style={{ border: 0 }}
-              allowFullScreen={true}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              className="grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out"
-            ></iframe>
+  src="https://www.google.com/maps?q=Kabale%20Macro%20Hardware&output=embed"
+  width="100%"
+  height="400"
+  style="border:0;"
+  loading="lazy"
+  allowfullscreen>
+</iframe>
           </div>
 
         </div>
