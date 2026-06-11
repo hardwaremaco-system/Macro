@@ -7,6 +7,7 @@ import { ArrowRight } from 'lucide-react';
 import { db } from '../../lib/firebase/client';
 import ProductCard, { ProductData } from './ProductCard';
 
+
 export default function LatestProducts() {
   const [products, setProducts] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
