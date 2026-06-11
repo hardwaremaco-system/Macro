@@ -4,7 +4,19 @@
 import React, { useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter, usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, ShoppingCart, Users, Tag, Image as ImageIcon, Settings, LogOut, FileText } from 'lucide-react';
+import { 
+  LayoutDashboard, 
+  Package, 
+  ShoppingCart, 
+  Users, 
+  Tag, 
+  Image as ImageIcon, 
+  Settings, 
+  LogOut, 
+  FileText,
+  ShieldCheck,
+  MessageSquare
+} from 'lucide-react';
 // Strict relative path
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../lib/firebase/client';
@@ -15,6 +27,8 @@ const adminLinks = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Customers', href: '/admin/customers', icon: Users },
+  { name: 'Trusted Brands', href: '/admin/brands', icon: ShieldCheck },
+  { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
   { name: 'Promotions', href: '/admin/promotions', icon: Tag },
   { name: 'News & Events', href: '/admin/news', icon: FileText },
   { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },
@@ -56,13 +70,13 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen flex bg-gray-100">
-      
+
       {/* Sidebar Navigation */}
       <aside className="w-64 bg-blue-900 text-white flex-shrink-0 fixed h-full z-20">
         <div className="h-16 flex items-center px-6 bg-blue-950 border-b border-blue-800">
           <span className="text-xl font-black tracking-tight">MACRO <span className="text-amber-500">ADMIN</span></span>
         </div>
-        
+
         <div className="p-4">
           <div className="text-xs font-bold text-blue-300 uppercase tracking-wider mb-4 px-2">Management</div>
           <nav className="space-y-1">
