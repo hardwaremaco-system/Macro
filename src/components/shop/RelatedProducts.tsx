@@ -37,19 +37,25 @@ export default function RelatedProducts({ category, currentProductId }: { catego
   if (loading || products.length === 0) return null;
 
   return (
-    <div className="mt-12 pt-8">
-      <h2 className="text-lg font-black text-gray-900 mb-6 uppercase tracking-wide">You Might Also Like</h2>
+    // Gray background container with yellow top border divider
+    <div className="mt-16 bg-gray-50 border-t-[3px] border-yellow-400 py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        
+        {/* Yellow heading */}
+        <h2 className="text-lg font-black text-yellow-500 mb-6 uppercase tracking-wide">
+          You Might Also Like
+        </h2>
 
-      {/* Horizontal Scroll Container */}
-      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
-        {products.map(product => (
-          /* Strictly enforced width so the card never squishes, maintaining the clean site-wide look */
-          <div key={product.id} className="w-[160px] sm:w-[220px] shrink-0 snap-start flex">
-            <div className="w-full">
-              <ProductCard product={product} />
+        {/* Horizontal Scroll Container */}
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
+          {products.map(product => (
+            <div key={product.id} className="w-[160px] sm:w-[220px] shrink-0 snap-start flex">
+              <div className="w-full">
+                <ProductCard product={product} />
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
