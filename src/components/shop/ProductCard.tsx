@@ -57,9 +57,9 @@ export default function ProductCard({ product }: { product: ProductData }) {
           {product.title}
         </h3>
 
-        {/* 3. Price (Bottom, largest emphasis text-xl/2xl, pushed down by mt-auto) */}
+        {/* 3. Price (Bottom, slightly smaller emphasis text-lg/xl, pushed down by mt-auto) */}
         <div className="mt-auto pt-4">
-          <div className="text-xl sm:text-2xl font-black text-orange-600 leading-none">
+          <div className="text-lg sm:text-xl font-black text-yellow-500 leading-none">
             UGX {Number(product.price).toLocaleString()}
           </div>
           {product.originalPrice && (
