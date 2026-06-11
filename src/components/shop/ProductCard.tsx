@@ -57,12 +57,9 @@ export default function ProductCard({ product }: { product: ProductData }) {
           {product.title}
         </h3>
 
-        {/* 3. Divider Line - Pushes the price perfectly to the bottom */}
-        <div className="border-t border-gray-100 w-full mt-auto pt-3 mb-1"></div>
-
-        {/* 4. Price (Bottom, largest emphasis text-xl/2xl) */}
-        <div>
-          <div className="text-xl sm:text-2xl font-black text-slate-900 leading-none">
+        {/* 3. Price (Bottom, largest emphasis text-xl/2xl, pushed down by mt-auto) */}
+        <div className="mt-auto pt-4">
+          <div className="text-xl sm:text-2xl font-black text-orange-600 leading-none">
             UGX {Number(product.price).toLocaleString()}
           </div>
           {product.originalPrice && (
