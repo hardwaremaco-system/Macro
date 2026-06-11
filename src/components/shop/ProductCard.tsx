@@ -32,7 +32,6 @@ export default function ProductCard({ product }: { product: ProductData }) {
 
   const currentStock = product.stock !== undefined ? product.stock : 99;
 
-  // Fixed Routing: Using product.id instead of product.slug
   return (
     <Link href={`/product/${product.id}`} className="group flex flex-col bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all relative">
 
@@ -58,15 +57,17 @@ export default function ProductCard({ product }: { product: ProductData }) {
         )}
       </div>
 
-      {/* Product Content */}
+      {/* Product Content - Reduced overall padding slightly to tighten up */}
       <div className="p-3 flex flex-col flex-grow">
-        
-        <h3 className="text-sm font-medium text-gray-800 line-clamp-2 leading-tight min-h-[40px]">
+
+        {/* Removed min-h-[40px] so short titles don't leave empty vertical space */}
+        <h3 className="text-sm font-medium text-gray-800 line-clamp-2 leading-tight">
           {product.title}
         </h3>
 
-        <div className="mt-2 flex-grow">
-          <div className="text-lg font-black text-gray-900">
+        {/* Reduced mt-2 to mt-1 */}
+        <div className="mt-1 flex-grow">
+          <div className="text-lg font-black text-gray-900 leading-tight">
             UGX {Number(product.price).toLocaleString()}
           </div>
           {product.originalPrice && (
@@ -76,8 +77,8 @@ export default function ProductCard({ product }: { product: ProductData }) {
           )}
         </div>
 
-        {/* Stock Indicator & Action Button */}
-        <div className="mt-3 pt-3 border-t border-gray-50 flex items-center justify-between">
+        {/* Reduced margins and paddings from 3 to 2 to pull the footer up */}
+        <div className="mt-2 pt-2 border-t border-gray-50 flex items-center justify-between">
           <span className={`text-[10px] font-bold uppercase ${currentStock > 10 ? 'text-emerald-500' : 'text-orange-500'}`}>
             {currentStock > 0 ? (currentStock > 10 ? 'In Stock' : `Only ${currentStock} left`) : 'Out of Stock'}
           </span>
