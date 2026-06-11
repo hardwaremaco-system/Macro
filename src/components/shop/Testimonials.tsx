@@ -2,22 +2,32 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, query, where, getDocs, addDoc, serverTimestamp, limit } from 'firebase/firestore';
 import { Star, MessageSquareQuote, X } from 'lucide-react';
+// Strict relative path
 import { db } from '../../lib/firebase/client';
 
 export default function Testimonials() {
   const [reviews, setReviews] = useState<any[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({ name: '', role: '', rating: 5, message: '' });
 
   useEffect(() => {
     async function fetchReviews() {
-      const q = query(collection(db, 'testimonials'), where('status', '==', 'approved'));
-      const snapshot = await getDocs(q);
-      setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      try {
+        // Fetch only 5 approved reviews to save space and bandwidth
+        const q = query(
+          collection(db, 'testimonials'), 
+          where('status', '==', 'approved'),
+          limit(5)
+        );
+        const snapshot = await getDocs(q);
+        setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+      }
     }
     fetchReviews();
   }, []);
@@ -28,7 +38,7 @@ export default function Testimonials() {
     try {
       await addDoc(collection(db, 'testimonials'), {
         ...formData,
-        status: 'pending', // Requires admin approval!
+        status: 'pending',
         createdAt: serverTimestamp()
       });
       alert('Thank you! Your review has been submitted and is pending approval.');
@@ -42,40 +52,51 @@ export default function Testimonials() {
   };
 
   return (
-    <section className="bg-gray-900 py-16 text-white relative">
+    <section className="bg-gray-900 py-12 border-y border-gray-800 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
+        
+        {/* Compact Header */}
+        <div className="flex justify-between items-end mb-6 border-b border-gray-800 pb-3">
           <div>
-            <h2 className="text-3xl font-black text-white mb-2">What our customers say</h2>
-            <p className="text-gray-400 text-sm">Don't just take our word for it. Read reviews from contractors and homeowners.</p>
+            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">Customer Reviews</h2>
           </div>
-          <button onClick={() => setIsModalOpen(true)} className="bg-amber-500 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-amber-600 transition-colors whitespace-nowrap shadow-md">
-            Leave a Review
+          <button 
+            onClick={() => setIsModalOpen(true)} 
+            className="text-xs sm:text-sm font-bold text-amber-500 hover:text-amber-400 transition-colors uppercase tracking-wider mb-1"
+          >
+            Leave a Review &rarr;
           </button>
         </div>
 
         {reviews.length === 0 ? (
-          <div className="text-center py-12 border border-dashed border-gray-700 rounded-xl">
-            <MessageSquareQuote size={48} className="mx-auto text-gray-600 mb-4" />
-            <p className="text-gray-400">Be the first to review Macro Hardware!</p>
+          <div className="text-center py-8 border border-dashed border-gray-800 rounded-xl">
+            <MessageSquareQuote size={32} className="mx-auto text-gray-700 mb-2" />
+            <p className="text-sm text-gray-500">Be the first to review our materials!</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          /* Native Horizontal Snap Scroll (Hides scrollbar, enables swipe) */
+          <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {reviews.map((review) => (
-              <div key={review.id} className="bg-gray-800 p-8 rounded-2xl border border-gray-700 hover:border-gray-600 transition-colors">
-                <div className="flex text-amber-500 mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} className={i < review.rating ? "fill-amber-500" : "text-gray-600"} />
-                  ))}
+              <div 
+                key={review.id} 
+                className="snap-center shrink-0 w-[280px] sm:w-[320px] bg-gray-800/50 backdrop-blur-sm p-6 rounded-2xl border border-gray-700 hover:border-gray-600 transition-colors flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex text-amber-500 mb-3">
+                    {[...Array(5)].map((_, i) => (
+                      <Star key={i} size={14} className={i < review.rating ? "fill-amber-500" : "text-gray-600"} />
+                    ))}
+                  </div>
+                  <p className="text-sm text-gray-300 italic mb-5 leading-relaxed line-clamp-3">"{review.message}"</p>
                 </div>
-                <p className="text-gray-300 italic mb-6 leading-relaxed">"{review.message}"</p>
-                <div className="flex items-center">
-                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-lg font-black mr-3">
+                
+                <div className="flex items-center mt-auto">
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-sm font-black mr-3 shrink-0">
                     {review.name.charAt(0)}
                   </div>
-                  <div>
-                    <h4 className="font-bold text-white text-sm">{review.name}</h4>
-                    <p className="text-xs text-gray-400">{review.role}</p>
+                  <div className="min-w-0">
+                    <h4 className="font-bold text-white text-xs truncate">{review.name}</h4>
+                    <p className="text-[10px] text-gray-400 truncate">{review.role || 'Verified Customer'}</p>
                   </div>
                 </div>
               </div>
@@ -86,38 +107,40 @@ export default function Testimonials() {
 
       {/* Review Submission Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
-          <div className="bg-white text-gray-900 rounded-xl shadow-2xl w-full max-w-md overflow-hidden p-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-white text-gray-900 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden p-6 sm:p-8">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-xl font-black">Rate Your Experience</h2>
-              <button onClick={() => setIsModalOpen(false)}><X size={24} className="text-gray-400" /></button>
+              <h2 className="text-xl font-black tracking-tight">Rate Your Experience</h2>
+              <button onClick={() => setIsModalOpen(false)} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+                <X size={20} className="text-gray-500 hover:text-red-500" />
+              </button>
             </div>
-            
+
             <form onSubmit={handleSubmitReview} className="space-y-4">
               <div className="flex justify-center mb-6">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <button key={star} type="button" onClick={() => setFormData({...formData, rating: star})} className="p-1 focus:outline-none">
-                    <Star size={32} className={`transition-colors ${star <= formData.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-300'}`} />
+                  <button key={star} type="button" onClick={() => setFormData({...formData, rating: star})} className="p-1.5 focus:outline-none hover:scale-110 transition-transform">
+                    <Star size={32} className={`transition-colors ${star <= formData.rating ? 'text-amber-500 fill-amber-500' : 'text-gray-200'}`} />
                   </button>
                 ))}
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Your Name</label>
-                <input required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="e.g. John Doe" />
-              </div>
-              
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Role / Location (Optional)</label>
-                <input value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="e.g. Homeowner in Kabale" />
+                <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">Your Name</label>
+                <input required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" placeholder="e.g. John Doe" />
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Your Review</label>
-                <textarea required rows={4} value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Tell us about the quality of materials and delivery..." />
+                <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">Role / Location (Optional)</label>
+                <input value={formData.role} onChange={(e) => setFormData({...formData, role: e.target.value})} className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all" placeholder="e.g. Homeowner in Kabale" />
               </div>
 
-              <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 mt-2">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 mb-1 uppercase tracking-wider">Your Review</label>
+                <textarea required rows={3} value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full border border-gray-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none" placeholder="Tell us about the quality of materials and delivery..." />
+              </div>
+
+              <button type="submit" disabled={isSubmitting} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-black hover:bg-blue-700 transition-colors mt-4 shadow-md disabled:opacity-50">
                 {isSubmitting ? 'Submitting...' : 'Submit Review'}
               </button>
             </form>
