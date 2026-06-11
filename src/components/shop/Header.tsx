@@ -32,10 +32,10 @@ export default function Header() {
       <header className="fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-2 sm:px-6 lg:px-8">
           
-          {/* Main Header Row - Massively reduced height on mobile (h-12) */}
+          {/* Main Header Row */}
           <div className="h-12 md:h-16 flex items-center justify-between">
             
-            {/* Left: Mobile Menu Toggle & Logo */}
+            {/* Left: Mobile Menu Toggle & Logo + Text */}
             <div className="flex items-center">
               <button 
                 onClick={() => setIsMobileMenuOpen(true)}
@@ -46,8 +46,10 @@ export default function Header() {
               </button>
               
               <Link href="/" className="flex items-center" onClick={closeMenu}>
-                <img src="/logo.png" alt="Macro Hardware Logo" className="h-6 md:h-9 object-contain" />
-                <span className="sr-only">Macro Hardware</span>
+                <img src="/logo.png" alt="Logo" className="h-6 md:h-9 object-contain mr-2" />
+                <span className="text-[14px] md:text-lg font-black tracking-tight text-gray-900 whitespace-nowrap">
+                  MACRO <span className="text-amber-500">HARDWARE</span>
+                </span>
               </Link>
             </div>
 
@@ -77,7 +79,7 @@ export default function Header() {
             </div>
           </div>
 
-          {/* Mobile Search Bar Row - Tightly stacked directly under the top row */}
+          {/* Mobile Search Bar Row */}
           <div className="md:hidden pb-2 px-1">
             <GlobalSearch />
           </div>
@@ -85,13 +87,11 @@ export default function Header() {
         </div>
       </header>
 
-      {/* Spacer to prevent content from jumping under the fixed header. 
-          88px accommodates the tighter mobile stack (48px top row + ~40px search row) */}
+      {/* Spacer to prevent content from jumping under the fixed header */}
       <div className="h-[88px] md:h-16 w-full shrink-0"></div>
 
       {/* --- Slide-in Mobile Menu (Hamburger Drawer) --- */}
       
-      {/* 1. Blurred Backdrop (Clicking outside closes the menu) */}
       <div 
         className={`fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 transition-opacity duration-300 ${
           isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
@@ -99,15 +99,18 @@ export default function Header() {
         onClick={closeMenu}
       />
 
-      {/* 2. Slide-in Drawer from Left */}
       <div 
         className={`fixed top-0 left-0 h-full w-[80%] max-w-[300px] bg-white z-50 shadow-2xl transform transition-transform duration-300 ease-in-out flex flex-col ${
           isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
-        {/* Drawer Header with Animated X Close Button */}
         <div className="h-16 flex items-center justify-between px-6 border-b border-gray-100 shrink-0">
-          <img src="/logo.png" alt="Macro Hardware Logo" className="h-6 object-contain" />
+          <div className="flex items-center">
+             <img src="/logo.png" alt="Logo" className="h-5 object-contain mr-2" />
+             <span className="text-sm font-black tracking-tight text-gray-900">
+               MACRO <span className="text-amber-500">HARDWARE</span>
+             </span>
+          </div>
           <button 
             onClick={closeMenu}
             className="p-1 text-gray-500 hover:text-red-500 transition-colors transform hover:rotate-90 duration-200"
@@ -116,7 +119,6 @@ export default function Header() {
           </button>
         </div>
 
-        {/* Drawer Navigation Links */}
         <nav className="flex-1 overflow-y-auto py-4 px-6 flex flex-col space-y-1">
           <Link href="/" onClick={closeMenu} className="py-3 text-[15px] font-black text-gray-900 border-b border-gray-50 hover:text-blue-600 transition-colors">
             Home
@@ -141,7 +143,6 @@ export default function Header() {
           </Link>
         </nav>
 
-        {/* Drawer Footer / User Action */}
         <div className="p-6 border-t border-gray-100 bg-gray-50 shrink-0">
           <Link 
             href={user ? "/profile" : "/login"} 
