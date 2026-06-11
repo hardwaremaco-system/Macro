@@ -23,31 +23,19 @@ export default function ProductBuyBox({ product }: { product: any }) {
 
   return (
     <div className="flex flex-col justify-center pt-2 sm:pt-0">
-      
-      {/* Exact Scarcity Badge */}
-      {currentStock > 0 && currentStock < 10 && (
-        <div className="bg-red-100 text-red-500 text-[11px] font-bold px-2.5 py-1 rounded-sm w-fit mb-3 lowercase tracking-wide">
-          only {currentStock} left
-        </div>
-      )}
-      {currentStock <= 0 && (
-        <div className="bg-gray-200 text-gray-600 text-[11px] font-bold px-2.5 py-1 rounded-sm w-fit mb-3 uppercase tracking-wide">
-          Out of Stock
-        </div>
-      )}
 
-      {/* Product Title */}
-      <h1 className="text-2xl sm:text-3xl font-black text-slate-700 leading-tight mb-3">
+      {/* Product Title - Made Significantly Larger */}
+      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 leading-tight mb-4 tracking-tight">
         {product.title}
       </h1>
 
-      {/* Price */}
-      <div className="flex items-end gap-3 mb-6">
-        <span className="text-2xl sm:text-3xl font-black text-slate-900">
+      {/* Price - Scaled up to match the new title weight */}
+      <div className="flex items-end gap-3 mb-8">
+        <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
           UGX {Number(product.price).toLocaleString()}
         </span>
         {product.originalPrice && (
-          <span className="text-sm text-gray-400 line-through font-bold mb-1">
+          <span className="text-base sm:text-lg text-gray-400 line-through font-bold mb-1.5">
             UGX {Number(product.originalPrice).toLocaleString()}
           </span>
         )}
@@ -55,22 +43,22 @@ export default function ProductBuyBox({ product }: { product: any }) {
 
       {/* Inline Quantity and Add to Cart Button */}
       <div className="flex items-center gap-3">
-        {/* Square Quantity Selector */}
-        <div className="flex items-center border border-gray-300 rounded-sm bg-white h-12 w-28 shrink-0">
+        {/* Square Quantity Selector (Slightly taller to balance the large text) */}
+        <div className="flex items-center border border-gray-300 rounded-sm bg-white h-14 w-32 shrink-0">
           <button 
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
             disabled={currentStock <= 0}
-            className="flex-1 flex justify-center text-gray-500 hover:text-black transition-colors disabled:opacity-50 text-lg font-medium"
+            className="flex-1 flex justify-center text-gray-500 hover:text-black transition-colors disabled:opacity-50 text-xl font-medium"
           >
             -
           </button>
-          <span className="w-8 text-center font-bold text-gray-900 text-sm">
+          <span className="w-10 text-center font-bold text-gray-900 text-base">
             {quantity}
           </span>
           <button 
             onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
             disabled={currentStock <= 0}
-            className="flex-1 flex justify-center text-gray-500 hover:text-black transition-colors disabled:opacity-50 text-lg font-medium"
+            className="flex-1 flex justify-center text-gray-500 hover:text-black transition-colors disabled:opacity-50 text-xl font-medium"
           >
             +
           </button>
@@ -80,13 +68,12 @@ export default function ProductBuyBox({ product }: { product: any }) {
         <button 
           onClick={handleAddToCart}
           disabled={currentStock <= 0}
-          className="flex-1 bg-slate-900 text-white h-12 rounded-sm font-bold text-xs sm:text-sm uppercase tracking-widest hover:bg-slate-800 transition-colors disabled:opacity-50"
+          className="flex-1 bg-slate-900 text-white h-14 rounded-sm font-bold text-sm sm:text-base uppercase tracking-widest hover:bg-slate-800 transition-colors disabled:opacity-50"
         >
-          Add to Cart
+          {currentStock <= 0 ? 'Out of Stock' : 'Add to Cart'}
         </button>
       </div>
-
-      <div className="mt-4 text-[10px] text-gray-400">+ More options</div>
+      
     </div>
   );
 }
