@@ -22,7 +22,7 @@ export default function RelatedProducts({ category, currentProductId }: { catego
         const data = snapshot.docs
           .map(doc => ({ id: doc.id, ...doc.data() }) as ProductData)
           .filter(p => p.id !== currentProductId)
-          .slice(0, 5); // Ensure max 5 items shown
+          .slice(0, 5); 
         
         setProducts(data);
       } catch (error) {
@@ -37,11 +37,15 @@ export default function RelatedProducts({ category, currentProductId }: { catego
   if (loading || products.length === 0) return null;
 
   return (
-    <div className="mt-12 pt-8 border-t border-gray-200">
-      <h2 className="text-2xl font-black text-gray-900 mb-6">You Might Also Like</h2>
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+    <div className="mt-12 pt-8">
+      <h2 className="text-lg font-black text-gray-900 mb-4 uppercase tracking-wide">You Might Also Like</h2>
+      
+      {/* Horizontal Scroll Container */}
+      <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
         {products.map(product => (
-          <ProductCard key={product.id} product={product} />
+          <div key={product.id} className="min-w-[160px] sm:min-w-[200px] snap-start shrink-0">
+            <ProductCard product={product} />
+          </div>
         ))}
       </div>
     </div>
