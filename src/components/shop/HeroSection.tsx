@@ -1,64 +1,38 @@
 // src/components/shop/HeroSection.tsx
-'use client';
-
 import React from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
-
-// Placeholder data for our banners (In the future, this will be fetched from Firestore)
-const banners = [
-  { id: 1, title: 'Massive Cement Sale', bg: 'bg-blue-600', img: '🧱' },
-  { id: 2, title: 'New Roofing Sheets', bg: 'bg-red-600', img: '🏠' },
-  { id: 3, title: 'Plumbing Essentials', bg: 'bg-emerald-600', img: '🚰' },
-];
+import Link from 'next/link';
+import { ArrowRight } from 'lucide-react';
 
 export default function HeroSection() {
   return (
-    <div className="max-w-7xl mx-auto px-0 sm:px-6 lg:px-8 pt-4">
-      {/* MOBILE VIEW: Swiper Carousel (Hidden on medium screens and up) */}
-      <div className="block md:hidden">
-        <Swiper
-          modules={[Autoplay, Pagination]}
-          spaceBetween={10}
-          slidesPerView={1}
-          autoplay={{ delay: 4000, disableOnInteraction: false }}
-          pagination={{ clickable: true }}
-          className="w-full h-[200px] rounded-none sm:rounded-xl"
-        >
-          {banners.map((banner) => (
-            <SwiperSlide key={banner.id}>
-              <div className={`w-full h-full ${banner.bg} flex items-center justify-center text-white text-3xl font-bold p-6`}>
-                <span className="mr-4 text-5xl">{banner.img}</span>
-                {banner.title}
-              </div>
-            </SwiperSlide>
-          ))}
-        </Swiper>
+    <section className="relative bg-gray-900 text-white pt-20 pb-24 lg:pt-32 lg:pb-40 overflow-hidden">
+      {/* Background Image with Overlay */}
+      <div className="absolute inset-0">
+        <img 
+          src="https://images.unsplash.com/photo-1541888086225-eb9533f81156?q=80&w=2070&auto=format&fit=crop" 
+          alt="Construction Materials Background" 
+          className="w-full h-full object-cover opacity-30"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/90 to-transparent"></div>
       </div>
 
-      {/* DESKTOP VIEW: Bento Grid (Hidden on mobile) */}
-      <div className="hidden md:grid grid-cols-3 gap-4 h-[400px]">
-        {/* Main large banner */}
-        <div className={`col-span-2 rounded-xl overflow-hidden ${banners[0].bg} flex flex-col justify-center p-12 text-white shadow-sm hover:shadow-md transition-shadow`}>
-          <span className="text-7xl mb-4">{banners[0].img}</span>
-          <h2 className="text-4xl font-black mb-2">{banners[0].title}</h2>
-          <p className="text-blue-100">Premium quality for your construction needs.</p>
-        </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-start">
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-6 max-w-3xl">
+          Building the Future of the <span className="text-amber-500">Western Region.</span>
+        </h1>
+        <p className="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl leading-relaxed">
+          Premium cement, roofing, plumbing, and electrical materials delivered directly to your site. Order online and pay on delivery.
+        </p>
         
-        {/* Side stacked banners */}
-        <div className="col-span-1 flex flex-col gap-4">
-          <div className={`flex-1 rounded-xl overflow-hidden ${banners[1].bg} flex items-center p-6 text-white shadow-sm hover:shadow-md transition-shadow`}>
-             <span className="text-4xl mr-4">{banners[1].img}</span>
-             <h3 className="text-xl font-bold">{banners[1].title}</h3>
-          </div>
-          <div className={`flex-1 rounded-xl overflow-hidden ${banners[2].bg} flex items-center p-6 text-white shadow-sm hover:shadow-md transition-shadow`}>
-             <span className="text-4xl mr-4">{banners[2].img}</span>
-             <h3 className="text-xl font-bold">{banners[2].title}</h3>
-          </div>
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <Link href="/categories" className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center">
+            Shop Materials <ArrowRight size={20} className="ml-2" />
+          </Link>
+          <Link href="/promotions" className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-colors flex items-center justify-center">
+            View Special Offers
+          </Link>
         </div>
       </div>
-    </div>
+    </section>
   );
 }
