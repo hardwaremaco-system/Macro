@@ -1,0 +1,49 @@
+// src/components/shop/RelatedProducts.tsx
+'use client';
+
+import React, { useEffect, useState } from 'react';
+import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+import { db } from '../../lib/firebase/client';
+import ProductCard, { ProductData } from './ProductCard';
+
+export default function RelatedProducts({ category, currentProductId }: { category?: string, currentProductId: string }) {
+  const [products, setProducts] = useState<ProductData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchRelated() {
+      if (!category) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const q = query(collection(db, 'products'), where('category', '==', category), limit(6));
+        const snapshot = await getDocs(q);
+        const data = snapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }) as ProductData)
+          .filter(p => p.id !== currentProductId)
+          .slice(0, 5); // Ensure max 5 items shown
+        
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching related products:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchRelated();
+  }, [category, currentProductId]);
+
+  if (loading || products.length === 0) return null;
+
+  return (
+    <div className="mt-12 pt-8 border-t border-gray-200">
+      <h2 className="text-2xl font-black text-gray-900 mb-6">You Might Also Like</h2>
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
+        {products.map(product => (
+          <ProductCard key={product.id} product={product} />
+        ))}
+      </div>
+    </div>
+  );
+}
