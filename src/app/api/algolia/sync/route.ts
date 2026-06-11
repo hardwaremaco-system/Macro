@@ -1,52 +1,37 @@
 // src/app/api/algolia/sync/route.ts
-import { NextResponse } from 'next/server';
-import { collection, getDocs } from 'firebase/firestore';
 import algoliasearch from 'algoliasearch';
-// Strict relative path
-import { db } from '../../../../lib/firebase/client';
+import { NextResponse } from 'next/server';
 
-export async function GET() {
+export async function POST(request: Request) {
   try {
-    // 1. Verify credentials
+    const productData = await request.json();
+
+    // 1. Verify credentials exist
     if (!process.env.NEXT_PUBLIC_ALGOLIA_APP_ID || !process.env.ALGOLIA_ADMIN_KEY) {
-      return NextResponse.json({ error: 'Algolia credentials missing from environment variables' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Algolia credentials missing from environment variables.' },
+        { status: 500 }
+      );
     }
 
-    // 2. Initialize Algolia Admin Client
+    // 2. Initialize the secure Algolia admin client
     const client = algoliasearch(
       process.env.NEXT_PUBLIC_ALGOLIA_APP_ID,
       process.env.ALGOLIA_ADMIN_KEY
     );
-    const index = client.initIndex('macro_products');
 
-    // 3. Fetch all products from Firestore
-    const querySnapshot = await getDocs(collection(db, 'products'));
-    const products: any[] = [];
+    // 3. Connect to your specific index (assuming you named it 'products')
+    const index = client.initIndex('products');
 
-    querySnapshot.forEach((doc) => {
-      const data = doc.data();
-      // Algolia requires an 'objectID' for every record
-      products.push({
-        objectID: doc.id, 
-        name: data.name,
-        slug: data.slug,
-        price: data.price,
-        category: data.category,
-        image: data.image,
-      });
-    });
+    // 4. Save the product to Algolia (Algolia requires an 'objectID' which we will map to the Firestore doc ID)
+    await index.saveObject(productData);
 
-    // 4. Push to Algolia
-    await index.saveObjects(products);
-
-    return NextResponse.json({ 
-      success: true, 
-      count: products.length, 
-      message: 'Successfully synced Firestore products to Algolia!' 
-    });
-
-  } catch (error: any) {
+    return NextResponse.json({ success: true, message: 'Synced to Algolia' });
+  } catch (error) {
     console.error('Algolia sync error:', error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to sync with Algolia search index.' },
+      { status: 500 }
+    );
   }
 }
