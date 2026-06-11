@@ -4,10 +4,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
-// Strict relative path to prevent Vercel alias errors
 import { useCartStore } from '../../store/useCartStore';
 
-// 1. Fixed Interface: Swapped 'name' to 'title' to match Firestore
 export interface ProductData {
   id: string;
   title: string; 
@@ -15,7 +13,7 @@ export interface ProductData {
   price: number;
   originalPrice?: number;
   image: string;
-  stock?: number; // Made optional
+  stock?: number;
   isPromo?: boolean;
 }
 
@@ -23,9 +21,7 @@ export default function ProductCard({ product }: { product: ProductData }) {
   const addItem = useCartStore((state) => state.addItem);
 
   const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); // Prevents the Link from navigating when clicking the button
-    
-    // We pass 'name: product.title' just in case the cart store still expects a 'name' property
+    e.preventDefault(); 
     addItem({ ...product, name: product.title }, 1);
     alert(`${product.title} added to cart!`);
   };
@@ -34,11 +30,10 @@ export default function ProductCard({ product }: { product: ProductData }) {
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
     : 0;
 
-  // Since we don't upload stock amounts yet, we default to showing "In Stock" (e.g., 99)
   const currentStock = product.stock !== undefined ? product.stock : 99;
 
+  // Fixed Routing: Using product.id instead of product.slug
   return (
-    {/* 2. Fixed Routing: Using product.id instead of product.slug */}
     <Link href={`/product/${product.id}`} className="group flex flex-col bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all relative">
 
       {/* Promotion Badge */}
@@ -58,7 +53,7 @@ export default function ProductCard({ product }: { product: ProductData }) {
           />
         ) : (
           <div className="text-6xl group-hover:scale-110 transition-transform duration-300">
-            {product.image || '📦'}
+            {product.image || ''}
           </div>
         )}
       </div>
@@ -66,7 +61,6 @@ export default function ProductCard({ product }: { product: ProductData }) {
       {/* Product Content */}
       <div className="p-3 flex flex-col flex-grow">
         
-        {/* 3. Fixed Display: Using product.title */}
         <h3 className="text-sm font-medium text-gray-800 line-clamp-2 leading-tight min-h-[40px]">
           {product.title}
         </h3>
