@@ -23,7 +23,7 @@ export default function RelatedProducts({ category, currentProductId }: { catego
           .map(doc => ({ id: doc.id, ...doc.data() }) as ProductData)
           .filter(p => p.id !== currentProductId)
           .slice(0, 5); 
-        
+
         setProducts(data);
       } catch (error) {
         console.error('Error fetching related products:', error);
@@ -38,13 +38,16 @@ export default function RelatedProducts({ category, currentProductId }: { catego
 
   return (
     <div className="mt-12 pt-8">
-      <h2 className="text-lg font-black text-gray-900 mb-4 uppercase tracking-wide">You Might Also Like</h2>
-      
+      <h2 className="text-lg font-black text-gray-900 mb-6 uppercase tracking-wide">You Might Also Like</h2>
+
       {/* Horizontal Scroll Container */}
       <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
         {products.map(product => (
-          <div key={product.id} className="min-w-[160px] sm:min-w-[200px] snap-start shrink-0">
-            <ProductCard product={product} />
+          /* Strictly enforced width so the card never squishes, maintaining the clean site-wide look */
+          <div key={product.id} className="w-[160px] sm:w-[220px] shrink-0 snap-start flex">
+            <div className="w-full">
+              <ProductCard product={product} />
+            </div>
           </div>
         ))}
       </div>
