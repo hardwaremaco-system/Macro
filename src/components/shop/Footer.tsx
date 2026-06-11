@@ -13,8 +13,12 @@ export default function Footer() {
           
           {/* Brand Info */}
           <div>
-            <Link href="/" className="text-2xl font-black text-white tracking-tight flex items-center mb-4">
-              MACRO <span className="text-amber-500 ml-1">HARDWARE</span>
+            <Link href="/" className="block mb-6">
+              <img 
+                src="/logo.png" 
+                alt="Macro Hardware Logo" 
+                className="h-10 object-contain brightness-0 invert" 
+              />
             </Link>
             <p className="text-sm text-gray-400 mb-6 leading-relaxed">
               Your trusted partner for premium building materials, construction supplies, and hardware in the Western Region.
