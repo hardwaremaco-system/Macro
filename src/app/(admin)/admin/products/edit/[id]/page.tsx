@@ -1,0 +1,281 @@
+// src/app/(admin)/admin/products/edit/[id]/page.tsx
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from 'next/navigation';
+import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { ArrowLeft, UploadCloud, CheckCircle, X, Star } from 'lucide-react';
+import { CldUploadWidget } from 'next-cloudinary';
+
+// Strict relative paths (6 levels up to reach src/lib)
+import { db } from '../../../../../../lib/firebase/client';
+import { STORE_CATEGORIES } from '../../../../../../lib/categories';
+
+export default function EditProductPage() {
+  const router = useRouter();
+  const params = useParams();
+  const productId = params.id as string;
+
+  const [isLoadingInitial, setIsLoadingInitial] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Form State
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState(STORE_CATEGORIES[0].name);
+  const [unit, setUnit] = useState('');
+  const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
+  const [stock, setStock] = useState('99');
+  const [description, setDescription] = useState('');
+  const [images, setImages] = useState<string[]>([]);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isPromo, setIsPromo] = useState(false);
+
+  // 1. Fetch Existing Product Data
+  useEffect(() => {
+    async function fetchProduct() {
+      if (!productId) return;
+      try {
+        const docRef = doc(db, 'products', productId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          setTitle(data.title || '');
+          setCategory(data.category || STORE_CATEGORIES[0].name);
+          setUnit(data.unit || '1 Unit');
+          setPrice(data.price?.toString() || '');
+          setOriginalPrice(data.originalPrice?.toString() || '');
+          setStock(data.stock?.toString() || '0');
+          setDescription(data.description || '');
+          
+          // Handle old single-image products vs new multi-image products gracefully
+          const fetchedImages = data.images && data.images.length > 0 
+            ? data.images 
+            : (data.image ? [data.image] : []);
+          setImages(fetchedImages);
+
+          setIsFeatured(data.isFeatured || false);
+          setIsPromo(data.isPromo || false);
+        } else {
+          alert('Product not found!');
+          router.push('/admin/products');
+        }
+      } catch (error) {
+        console.error('Error fetching product:', error);
+      } finally {
+        setIsLoadingInitial(false);
+      }
+    }
+    fetchProduct();
+  }, [productId, router]);
+
+  // 2. Handle Update
+  const handleUpdateProduct = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (images.length === 0) return alert('Please upload at least one product image.');
+
+    setIsSubmitting(true);
+    try {
+      const mainImage = images[0]; 
+
+      const productData = {
+        title,
+        category,
+        unit: unit || '1 Unit', 
+        price: Number(price),
+        originalPrice: originalPrice ? Number(originalPrice) : null,
+        stock: Number(stock),
+        description,
+        image: mainImage,
+        images: images, 
+        isFeatured,
+        isPromo,
+      };
+
+      // Update Firestore Document
+      const docRef = doc(db, 'products', productId);
+      await updateDoc(docRef, {
+        ...productData,
+        updatedAt: serverTimestamp(),
+      });
+
+      // Immediately Sync Update to Algolia via our Secure API
+      try {
+        await fetch('/api/algolia/sync', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            objectID: productId,
+            ...productData
+          }),
+        });
+      } catch (algoliaError) {
+        console.error('Product updated in Firestore, but Algolia sync failed:', algoliaError);
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        router.push('/admin/products');
+      }, 1500);
+
+    } catch (error) {
+      console.error('Error updating product:', error);
+      alert('Failed to update product. Check console.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setImages(images.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  if (isLoadingInitial) {
+    return (
+      <div className="min-h-[60vh] flex justify-center items-center">
+        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto pb-12">
+      {/* Header */}
+      <div className="flex items-center mb-8">
+        <button onClick={() => router.back()} className="mr-4 p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
+          <ArrowLeft size={20} />
+        </button>
+        <div>
+          <h1 className="text-2xl font-black text-gray-900">Edit Product</h1>
+          <p className="text-sm text-gray-500 mt-1">Update details, manage stock, or adjust pricing.</p>
+        </div>
+      </div>
+
+      {success && (
+        <div className="mb-6 bg-green-50 text-green-700 p-4 rounded-xl flex items-center font-bold border border-green-200 shadow-sm">
+          <CheckCircle size={20} className="mr-3" /> Product updated successfully! Redirecting...
+        </div>
+      )}
+
+      {/* Main Edit Form */}
+      <form onSubmit={handleUpdateProduct} className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-8">
+
+        {/* Row 1: Multi-Image Upload Gallery */}
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-3">Product Images (First image becomes the main thumbnail) *</label>
+          <div className="flex flex-wrap gap-4 items-start">
+            
+            {/* Render Uploaded Images */}
+            {images.map((img, idx) => (
+              <div key={idx} className={`relative w-32 h-32 rounded-xl border-2 overflow-hidden bg-gray-50 group ${idx === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
+                <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                
+                {/* Main Image Badge */}
+                {idx === 0 && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-[10px] font-black uppercase text-center py-1 flex items-center justify-center">
+                    <Star size={10} className="mr-1" /> Main Image
+                  </div>
+                )}
+
+                {/* Remove Button */}
+                <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600">
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+
+            {/* Upload Widget Trigger */}
+            <CldUploadWidget 
+              signatureEndpoint="/api/cloudinary/sign"
+              onSuccess={(result: any) => setImages(prev => [...prev, result.info.secure_url])}
+              options={{ multiple: true, maxFiles: 5 }}
+            >
+              {({ open }) => (
+                <button type="button" onClick={() => open()} className="w-32 h-32 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
+                  <UploadCloud size={24} className="mb-2" />
+                  <span className="font-bold text-sm">Add Photos</span>
+                </button>
+              )}
+            </CldUploadWidget>
+          </div>
+        </div>
+
+        {/* Row 2: Title, Category, & Unit */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Product Title *</label>
+            <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Category *</label>
+            <select required value={category} onChange={(e) => setCategory(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500">
+              {STORE_CATEGORIES.map((cat) => (
+                <option key={cat.slug} value={cat.name}>{cat.name}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Unit / Size</label>
+            <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 50kg, 1L, Pack of 12" />
+          </div>
+        </div>
+
+        {/* Row 3: Pricing & Inventory */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Selling Price (UGX) *</label>
+            <input required type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Original Price (Optional)</label>
+            <input type="number" min="0" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 35000 (Crossed out)" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Available Stock *</label>
+            <input required type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+          </div>
+        </div>
+
+        {/* Row 4: Description */}
+        <div>
+          <label className="block text-sm font-bold text-gray-700 mb-2">Product Description</label>
+          <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        {/* Row 5: Store Settings Toggles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setIsFeatured(!isFeatured)}>
+            <input type="checkbox" checked={isFeatured} readOnly className="h-5 w-5 rounded border-gray-300 text-blue-600 pointer-events-none" />
+            <div className="ml-3">
+              <span className="block font-bold text-gray-900 text-sm">Feature on Homepage</span>
+              <span className="block text-xs text-gray-500">Displays this item in the "Featured" section.</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setIsPromo(!isPromo)}>
+            <input type="checkbox" checked={isPromo} readOnly className="h-5 w-5 rounded border-gray-300 text-red-500 pointer-events-none" />
+            <div className="ml-3">
+              <span className="block font-bold text-gray-900 text-sm">Mark as Promotion</span>
+              <span className="block text-xs text-gray-500">Highlights the item with a red discount badge.</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Submit Action */}
+        <div className="pt-6 border-t border-gray-100">
+          <button type="submit" disabled={isSubmitting || success} className="w-full bg-blue-600 text-white py-4 rounded-xl font-black hover:bg-blue-700 transition-colors disabled:opacity-50 text-lg shadow-md flex items-center justify-center">
+            {isSubmitting ? (
+              <span className="flex items-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                Saving Changes...
+              </span>
+            ) : (
+              'Save Product Changes'
+            )}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
