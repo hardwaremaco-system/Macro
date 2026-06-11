@@ -17,10 +17,11 @@ export default function UploadProductPage() {
 
   // Form State
   const [title, setTitle] = useState('');
+  const [category, setCategory] = useState(STORE_CATEGORIES[0].name);
+  const [unit, setUnit] = useState(''); // New Unit/Size state
   const [price, setPrice] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [stock, setStock] = useState('99');
-  const [category, setCategory] = useState(STORE_CATEGORIES[0].name);
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isFeatured, setIsFeatured] = useState(false);
@@ -32,14 +33,15 @@ export default function UploadProductPage() {
 
     setIsSubmitting(true);
     try {
-      const mainImage = images[0]; // The first image is the primary thumbnail
-      
+      const mainImage = images[0]; 
+
       const productData = {
         title,
+        category,
+        unit: unit || '1 Unit', // Safely defaults to '1 Unit' if left blank
         price: Number(price),
         originalPrice: originalPrice ? Number(originalPrice) : null,
         stock: Number(stock),
-        category,
         description,
         image: mainImage,
         images: images, 
@@ -145,11 +147,11 @@ export default function UploadProductPage() {
           </div>
         </div>
 
-        {/* Row 2: Title & Category */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Row 2: Title, Category, & Unit */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Product Title *</label>
-            <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Tororo Cement 50kg" />
+            <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Tororo Cement" />
           </div>
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Category *</label>
@@ -158,6 +160,10 @@ export default function UploadProductPage() {
                 <option key={cat.slug} value={cat.name}>{cat.name}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Unit / Size</label>
+            <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 50kg, 1L, Pack of 12" />
           </div>
         </div>
 
