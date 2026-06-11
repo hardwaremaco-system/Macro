@@ -1,18 +1,10 @@
 // src/app/(shop)/categories/page.tsx
 import React from 'react';
 import Link from 'next/link';
-import { Hammer, Zap, Droplet, ShieldPlus, Wrench, HardHat } from 'lucide-react';
+// Strict relative path to the central file
+import { STORE_CATEGORIES } from '../../../lib/categories';
 
 export default function AllCategoriesPage() {
-  const categories = [
-    { name: 'Cement', slug: 'cement', icon: <HardHat size={40} className="mb-4 text-gray-400 group-hover:text-amber-500 transition-colors" />, desc: 'High-quality Portland and Pozzolana cement.' },
-    { name: 'Roofing', slug: 'roofing', icon: <ShieldPlus size={40} className="mb-4 text-gray-400 group-hover:text-blue-500 transition-colors" />, desc: 'Iron sheets, nails, and complete roofing systems.' },
-    { name: 'Plumbing', slug: 'plumbing', icon: <Droplet size={40} className="mb-4 text-gray-400 group-hover:text-blue-400 transition-colors" />, desc: 'PVC pipes, fittings, tanks, and bathroom fixtures.' },
-    { name: 'Electrical', slug: 'electrical', icon: <Zap size={40} className="mb-4 text-gray-400 group-hover:text-yellow-500 transition-colors" />, desc: 'Wires, switches, conduits, and lighting.' },
-    { name: 'Tools', slug: 'tools', icon: <Hammer size={40} className="mb-4 text-gray-400 group-hover:text-red-500 transition-colors" />, desc: 'Hand tools and power tools for every job.' },
-    { name: 'Hardware', slug: 'hardware', icon: <Wrench size={40} className="mb-4 text-gray-400 group-hover:text-gray-900 transition-colors" />, desc: 'Nails, hinges, locks, and general fasteners.' },
-  ];
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center max-w-3xl mx-auto mb-12">
@@ -22,16 +14,23 @@ export default function AllCategoriesPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((cat) => (
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        {STORE_CATEGORIES.map((category) => (
           <Link 
-            key={cat.slug} 
-            href={`/categories/${cat.slug}`}
-            className="bg-white border border-gray-200 rounded-2xl p-8 text-center hover:shadow-lg transition-all group flex flex-col items-center justify-center"
+            key={category.slug} 
+            href={`/categories/${category.slug}`}
+            className="bg-white border border-gray-200 rounded-2xl p-6 text-center hover:shadow-lg hover:border-blue-300 transition-all group flex flex-col items-center justify-center"
           >
-            {cat.icon}
-            <h2 className="text-xl font-black text-gray-900 mb-2">{cat.name}</h2>
-            <p className="text-sm text-gray-500">{cat.desc}</p>
+            {/* Transparent Category Image */}
+            <div className="w-20 h-20 mb-4 relative z-10">
+              <img 
+                src={category.image} 
+                alt={category.name} 
+                className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
+              />
+            </div>
+            <h2 className="text-lg font-black text-gray-900 mb-1">{category.name}</h2>
+            <p className="text-xs text-gray-500 line-clamp-2">{category.desc}</p>
           </Link>
         ))}
       </div>
