@@ -24,12 +24,12 @@ export default function ProductBuyBox({ product }: { product: any }) {
   return (
     <div className="flex flex-col justify-center pt-2 sm:pt-0">
 
-      {/* Product Title - Made Significantly Larger */}
-      <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-800 leading-tight mb-4 tracking-tight">
+      {/* Product Title - Doubled in size and made gray */}
+      <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-gray-500 leading-none mb-6 tracking-tighter">
         {product.title}
       </h1>
 
-      {/* Price - Scaled up to match the new title weight */}
+      {/* Price - Kept at its original size */}
       <div className="flex items-end gap-3 mb-8">
         <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
           UGX {Number(product.price).toLocaleString()}
@@ -43,7 +43,7 @@ export default function ProductBuyBox({ product }: { product: any }) {
 
       {/* Inline Quantity and Add to Cart Button */}
       <div className="flex items-center gap-3">
-        {/* Square Quantity Selector (Slightly taller to balance the large text) */}
+        {/* Square Quantity Selector */}
         <div className="flex items-center border border-gray-300 rounded-sm bg-white h-14 w-32 shrink-0">
           <button 
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -73,7 +73,7 @@ export default function ProductBuyBox({ product }: { product: any }) {
           {currentStock <= 0 ? 'Out of Stock' : 'Add to Cart'}
         </button>
       </div>
-      
+
     </div>
   );
 }
