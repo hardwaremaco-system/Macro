@@ -35,9 +35,9 @@ const HOMEPAGE_CATEGORIES = [
     bgColor: 'bg-[#F2C5D6]', // Matches the light pink
   },
   { 
-    name: 'View All', 
-    slug: '', // Blank so it routes to the root /categories page
-    image: '/categories/view-all.png', // Add a "We Are Open" or "View All" transparent graphic here!
+    name: 'Hardware', 
+    slug: 'hardware', 
+    image: '/categories/hardware.png', 
     bgColor: 'bg-[#FAF7C8]', // Matches the pale yellow
   },
 ];
