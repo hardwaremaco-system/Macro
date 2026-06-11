@@ -4,28 +4,27 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-// Swapped to direct document fetching instead of querying
 import { doc, getDoc } from 'firebase/firestore';
-import { ShoppingCart, ArrowLeft, ShieldCheck, Truck, AlertCircle, Plus, Minus } from 'lucide-react';
-// Strict relative paths (4 levels up to src, then down)
+import { ArrowLeft } from 'lucide-react';
+
+// Strict relative paths
 import { db } from '../../../../lib/firebase/client';
-import { useCartStore } from '../../../../store/useCartStore';
+import ProductGallery from '../../../../components/shop/ProductGallery';
+import ProductBuyBox from '../../../../components/shop/ProductBuyBox';
+import ProductDescription from '../../../../components/shop/ProductDescription';
+import RelatedProducts from '../../../../components/shop/RelatedProducts';
 
 export default function ProductDetailsPage() {
   const params = useParams();
   const router = useRouter();
-  const documentId = params.slug as string; // The URL slug is actually the Firestore Document ID
-
-  const addItem = useCartStore((state) => state.addItem);
+  const documentId = params.slug as string;
 
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     async function fetchProduct() {
       try {
-        // Fetch the exact document directly using its ID
         const docRef = doc(db, 'products', documentId);
         const docSnap = await getDoc(docRef);
 
@@ -45,20 +44,6 @@ export default function ProductDetailsPage() {
       fetchProduct();
     }
   }, [documentId]);
-
-  const handleAddToCart = () => {
-    if (!product) return;
-
-    addItem({
-      id: product.id,
-      name: product.title, // Swapped to title to match DB
-      price: product.price,
-      image: product.image,
-      stock: product.stock,
-    }, quantity);
-
-    alert(`${quantity}x ${product.title} added to your cart!`);
-  };
 
   if (loading) {
     return (
@@ -80,13 +65,6 @@ export default function ProductDetailsPage() {
     );
   }
 
-  const discountPercentage = product.originalPrice 
-    ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
-    : 0;
-
-  // Default stock to 99 if undefined, just like the ProductCard
-  const currentStock = product.stock !== undefined ? product.stock : 99;
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb Navigation */}
@@ -96,121 +74,17 @@ export default function ProductDetailsPage() {
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col md:flex-row">
-
-        {/* Left: Product Image */}
-        <div className="w-full md:w-1/2 bg-gray-50 flex items-center justify-center border-b md:border-b-0 md:border-r border-gray-200 relative overflow-hidden aspect-square sm:aspect-auto">
-          {product.isPromo && discountPercentage > 0 && (
-            <div className="absolute top-4 left-4 z-10 bg-red-500 text-white text-xs font-black px-3 py-1.5 rounded-sm uppercase tracking-wider shadow-sm">
-              Save {discountPercentage}%
-            </div>
-          )}
-
-          {/* Dynamically render Cloudinary URL or fallback emoji */}
-          {product.image?.startsWith('http') ? (
-            <img 
-              src={product.image} 
-              alt={product.title} 
-              className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
-            />
-          ) : (
-            <div className="text-[150px] sm:text-[200px] transform hover:scale-105 transition-transform duration-300">
-              {product.image || '📦'}
-            </div>
-          )}
-        </div>
-
-        {/* Right: Product Details */}
-        <div className="w-full md:w-1/2 p-6 sm:p-10 flex flex-col justify-center">
-          <div className="mb-2">
-            <span className="text-xs font-bold text-blue-600 uppercase tracking-widest bg-blue-50 px-2 py-1 rounded">
-              {product.category || 'Hardware'}
-            </span>
-          </div>
-
-          {/* Reduced margin-bottom here to close the gap */}
-          <h1 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight mb-1">
-            {product.title}
-          </h1>
-
-          <div className="flex items-end gap-3 mb-6 border-b border-gray-100 pb-6">
-            <span className="text-3xl sm:text-4xl font-black text-blue-600">
-              UGX {Number(product.price).toLocaleString()}
-            </span>
-            {product.originalPrice && (
-              <span className="text-lg text-gray-400 line-through font-bold mb-1">
-                UGX {Number(product.originalPrice).toLocaleString()}
-              </span>
-            )}
-          </div>
-
-          {/* Trust Indicators */}
-          <div className="flex flex-col gap-3 mb-8">
-            <div className="flex items-center text-sm text-gray-700">
-              <ShieldCheck size={18} className="text-green-500 mr-2" />
-              <span className="font-bold">100% Genuine</span> — Sourced directly from manufacturers.
-            </div>
-            <div className="flex items-center text-sm text-gray-700">
-              <Truck size={18} className="text-blue-500 mr-2" />
-              <span className="font-bold">Fast Delivery</span> — Available across the Western Region.
-            </div>
-          </div>
-
-          {/* Action Section */}
-          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 sm:p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <span className="text-sm font-bold text-gray-700">Quantity</span>
-              {currentStock <= 0 ? (
-                <span className="text-red-600 flex items-center text-xs font-bold bg-red-50 px-2 py-1 rounded">
-                  <AlertCircle size={14} className="mr-1" /> Out of Stock
-                </span>
-              ) : currentStock < 10 ? (
-                <span className="text-amber-600 text-xs font-bold bg-amber-50 px-2 py-1 rounded">
-                  Only {currentStock} left in stock
-                </span>
-              ) : (
-                <span className="text-green-600 text-xs font-bold bg-green-50 px-2 py-1 rounded">
-                  In Stock
-                </span>
-              )}
-            </div>
-
-            <div className="flex flex-col sm:flex-row gap-4">
-              {/* Quantity Selector */}
-              <div className="flex items-center border border-gray-300 rounded-lg bg-white h-12 w-full sm:w-32">
-                <button 
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  disabled={currentStock <= 0}
-                  className="flex-1 flex justify-center text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50"
-                >
-                  <Minus size={18} />
-                </button>
-                <span className="w-12 text-center font-black text-gray-900">
-                  {quantity}
-                </span>
-                <button 
-                  onClick={() => setQuantity(Math.min(currentStock, quantity + 1))}
-                  disabled={currentStock <= 0}
-                  className="flex-1 flex justify-center text-gray-500 hover:text-blue-600 transition-colors disabled:opacity-50"
-                >
-                  <Plus size={18} />
-                </button>
-              </div>
-
-              {/* Add to Cart Button */}
-              <button 
-                onClick={handleAddToCart}
-                disabled={currentStock <= 0}
-                className="flex-1 bg-blue-600 text-white h-12 rounded-lg font-black hover:bg-blue-700 transition-colors flex items-center justify-center shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ShoppingCart size={20} className="mr-2" />
-                Add to Cart
-              </button>
-            </div>
-          </div>
-
-        </div>
+      {/* Main Content Grid: On Mobile it stacks vertically, on Desktop it sits side-by-side */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
+        <ProductGallery image={product.image} images={product.images} title={product.title} />
+        <ProductBuyBox product={product} />
       </div>
+
+      {/* Description Section */}
+      <ProductDescription description={product.description} />
+
+      {/* You Might Also Like Section */}
+      <RelatedProducts category={product.category} currentProductId={product.id} />
     </div>
   );
 }
