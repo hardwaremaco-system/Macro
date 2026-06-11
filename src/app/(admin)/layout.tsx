@@ -29,7 +29,6 @@ const adminLinks = [
   { name: 'Customers', href: '/admin/customers', icon: Users },
   { name: 'Trusted Brands', href: '/admin/brands', icon: ShieldCheck },
   { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
-  { name: 'Promotions', href: '/admin/promotions', icon: Tag },
   { name: 'News & Events', href: '/admin/news', icon: FileText },
   { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
