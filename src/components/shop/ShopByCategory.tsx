@@ -45,7 +45,7 @@ const HOMEPAGE_CATEGORIES = [
 export default function ShopByCategory() {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
-      
+
       {/* Header with Heading on Left and "View All" Link on Right */}
       <div className="flex justify-between items-end mb-8 border-b border-gray-100 pb-2">
         <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
@@ -69,7 +69,7 @@ export default function ShopByCategory() {
           >
             {/* The Colored Box (Squarcle) */}
             <div className={`w-full aspect-square rounded-2xl sm:rounded-3xl ${cat.bgColor} relative flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-300 group-hover:-translate-y-2 shadow-sm`}>
-              
+
               {/* The Image 
                 w-[120%] and h-[120%] forces the image to be larger than the box.
                 absolute positioning lets it break outside the boundaries for that 3D pop effect.
@@ -79,9 +79,9 @@ export default function ShopByCategory() {
                 alt={cat.name} 
                 className="absolute w-[120%] h-[120%] object-contain drop-shadow-xl group-hover:scale-110 transition-transform duration-300"
               />
-              
+
             </div>
-            
+
             {/* The Text Separated Below */}
             <h3 className="text-[11px] sm:text-sm md:text-base font-black text-gray-900 text-center tracking-tight group-hover:text-blue-600 transition-colors">
               {cat.name}
