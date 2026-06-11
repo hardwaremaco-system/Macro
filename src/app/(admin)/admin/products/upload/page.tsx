@@ -4,7 +4,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ArrowLeft, UploadCloud, CheckCircle, X } from 'lucide-react';
+import { ArrowLeft, UploadCloud, CheckCircle, X, Star } from 'lucide-react';
 import { CldUploadWidget } from 'next-cloudinary';
 // Strict relative paths
 import { db } from '../../../../../lib/firebase/client';
@@ -18,48 +18,55 @@ export default function UploadProductPage() {
   // Form State
   const [title, setTitle] = useState('');
   const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
+  const [stock, setStock] = useState('99');
   const [category, setCategory] = useState(STORE_CATEGORIES[0].name);
   const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
+  const [images, setImages] = useState<string[]>([]);
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isPromo, setIsPromo] = useState(false);
 
   const handleUploadProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!image) return alert('Please upload a product image first.');
-    
+    if (images.length === 0) return alert('Please upload at least one product image.');
+
     setIsSubmitting(true);
     try {
-      // 1. Save to Firestore First
-      const docRef = await addDoc(collection(db, 'products'), {
+      const mainImage = images[0]; // The first image is the primary thumbnail
+      
+      const productData = {
         title,
         price: Number(price),
+        originalPrice: originalPrice ? Number(originalPrice) : null,
+        stock: Number(stock),
         category,
         description,
-        image,
+        image: mainImage,
+        images: images, 
         isFeatured,
+        isPromo,
+      };
+
+      // 1. Save to Firestore First
+      const docRef = await addDoc(collection(db, 'products'), {
+        ...productData,
         createdAt: serverTimestamp(),
       });
-      
+
       // 2. Immediately Sync to Algolia via our Secure API
       try {
         await fetch('/api/algolia/sync', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            objectID: docRef.id, // Algolia strictly requires the ID to be named 'objectID'
-            title,
-            price: Number(price),
-            category,
-            description,
-            image,
-            isFeatured,
+            objectID: docRef.id,
+            ...productData
           }),
         });
       } catch (algoliaError) {
         console.error('Product saved to Firestore, but Algolia sync failed:', algoliaError);
-        // We don't block the UI if search sync fails, but we log it for the admin
       }
-      
+
       setSuccess(true);
       setTimeout(() => {
         router.push('/admin/products');
@@ -72,8 +79,12 @@ export default function UploadProductPage() {
     }
   };
 
+  const removeImage = (indexToRemove: number) => {
+    setImages(images.filter((_, idx) => idx !== indexToRemove));
+  };
+
   return (
-    <div className="max-w-3xl mx-auto pb-12">
+    <div className="max-w-4xl mx-auto pb-12">
       {/* Header */}
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
@@ -81,43 +92,57 @@ export default function UploadProductPage() {
         </button>
         <div>
           <h1 className="text-2xl font-black text-gray-900">Add New Product</h1>
-          <p className="text-sm text-gray-500 mt-1">Upload a new item and sync it to search automatically.</p>
+          <p className="text-sm text-gray-500 mt-1">Upload a comprehensive product listing with gallery and stock tracking.</p>
         </div>
       </div>
 
       {success && (
-        <div className="mb-6 bg-green-50 text-green-700 p-4 rounded-xl flex items-center font-bold border border-green-200">
+        <div className="mb-6 bg-green-50 text-green-700 p-4 rounded-xl flex items-center font-bold border border-green-200 shadow-sm">
           <CheckCircle size={20} className="mr-3" /> Product uploaded & synced successfully! Redirecting...
         </div>
       )}
 
       {/* Main Upload Form */}
-      <form onSubmit={handleUploadProduct} className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
-        
-        {/* Row 1: Secure Image Upload */}
+      <form onSubmit={handleUploadProduct} className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-8">
+
+        {/* Row 1: Multi-Image Upload Gallery */}
         <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Product Image *</label>
-          {image ? (
-            <div className="relative w-48 h-48 rounded-xl border border-gray-200 overflow-hidden bg-gray-50">
-              <img src={image} alt="Preview" className="w-full h-full object-contain" />
-              <button type="button" onClick={() => setImage('')} className="absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-md">
-                <X size={16} />
-              </button>
-            </div>
-          ) : (
+          <label className="block text-sm font-bold text-gray-700 mb-3">Product Images (First image becomes the main thumbnail) *</label>
+          <div className="flex flex-wrap gap-4 items-start">
+            
+            {/* Render Uploaded Images */}
+            {images.map((img, idx) => (
+              <div key={idx} className={`relative w-32 h-32 rounded-xl border-2 overflow-hidden bg-gray-50 group ${idx === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
+                <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
+                
+                {/* Main Image Badge */}
+                {idx === 0 && (
+                  <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-[10px] font-black uppercase text-center py-1 flex items-center justify-center">
+                    <Star size={10} className="mr-1" /> Main Image
+                  </div>
+                )}
+
+                {/* Remove Button */}
+                <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600">
+                  <X size={14} />
+                </button>
+              </div>
+            ))}
+
+            {/* Upload Widget Trigger */}
             <CldUploadWidget 
               signatureEndpoint="/api/cloudinary/sign"
-              onSuccess={(result: any) => setImage(result.info.secure_url)}
+              onSuccess={(result: any) => setImages(prev => [...prev, result.info.secure_url])}
+              options={{ multiple: true, maxFiles: 5 }}
             >
               {({ open }) => (
-                <button type="button" onClick={() => open()} className="w-full h-40 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors">
-                  <UploadCloud size={32} className="mb-2" />
-                  <span className="font-bold">Click to upload image</span>
-                  <span className="text-xs text-blue-400 mt-1">PNG, JPG up to 5MB</span>
+                <button type="button" onClick={() => open()} className="w-32 h-32 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
+                  <UploadCloud size={24} className="mb-2" />
+                  <span className="font-bold text-sm">Add Photos</span>
                 </button>
               )}
             </CldUploadWidget>
-          )}
+          </div>
         </div>
 
         {/* Row 2: Title & Category */}
@@ -136,10 +161,20 @@ export default function UploadProductPage() {
           </div>
         </div>
 
-        {/* Row 3: Price */}
-        <div>
-          <label className="block text-sm font-bold text-gray-700 mb-2">Selling Price (UGX) *</label>
-          <input required type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="32000" />
+        {/* Row 3: Pricing & Inventory */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Selling Price (UGX) *</label>
+            <input required type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="32000" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Original Price (Optional)</label>
+            <input type="number" min="0" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 35000 (Crossed out)" />
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Available Stock *</label>
+            <input required type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="99" />
+          </div>
         </div>
 
         {/* Row 4: Description */}
@@ -148,19 +183,36 @@ export default function UploadProductPage() {
           <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Detail the specifications, grade, or best use cases..." />
         </div>
 
-        {/* Row 5: Featured Toggle */}
-        <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setIsFeatured(!isFeatured)}>
-          <input type="checkbox" checked={isFeatured} readOnly className="h-5 w-5 rounded border-gray-300 text-blue-600 pointer-events-none" />
-          <div className="ml-3">
-            <span className="block font-bold text-gray-900 text-sm">Feature on Homepage</span>
-            <span className="block text-xs text-gray-500">Check this to display the product in the &quot;Featured Materials&quot; section.</span>
+        {/* Row 5: Store Settings Toggles */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setIsFeatured(!isFeatured)}>
+            <input type="checkbox" checked={isFeatured} readOnly className="h-5 w-5 rounded border-gray-300 text-blue-600 pointer-events-none" />
+            <div className="ml-3">
+              <span className="block font-bold text-gray-900 text-sm">Feature on Homepage</span>
+              <span className="block text-xs text-gray-500">Displays this item in the "Featured" section.</span>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setIsPromo(!isPromo)}>
+            <input type="checkbox" checked={isPromo} readOnly className="h-5 w-5 rounded border-gray-300 text-red-500 pointer-events-none" />
+            <div className="ml-3">
+              <span className="block font-bold text-gray-900 text-sm">Mark as Promotion</span>
+              <span className="block text-xs text-gray-500">Highlights the item with a red discount badge.</span>
+            </div>
           </div>
         </div>
 
         {/* Submit Action */}
-        <div className="pt-4 border-t border-gray-100">
-          <button type="submit" disabled={isSubmitting || success} className="w-full bg-blue-600 text-white py-3.5 rounded-xl font-black hover:bg-blue-700 transition-colors disabled:opacity-50 text-lg shadow-md">
-            {isSubmitting ? 'Uploading & Syncing...' : 'Publish Product to Store'}
+        <div className="pt-6 border-t border-gray-100">
+          <button type="submit" disabled={isSubmitting || success} className="w-full bg-blue-600 text-white py-4 rounded-xl font-black hover:bg-blue-700 transition-colors disabled:opacity-50 text-lg shadow-md flex items-center justify-center">
+            {isSubmitting ? (
+              <span className="flex items-center">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                Publishing to Store...
+              </span>
+            ) : (
+              'Publish Product to Store'
+            )}
           </button>
         </div>
       </form>
