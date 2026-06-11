@@ -3,7 +3,6 @@ import React from 'react';
 
 // Strict relative imports for all our dynamic components
 import HeroSection from '../../components/shop/HeroSection';
-import PromotionsBanner from '../../components/shop/PromotionsBanner';
 import LatestProducts from '../../components/shop/LatestProducts';
 import ShopByCategory from '../../components/shop/ShopByCategory';
 import FeaturedProducts from '../../components/shop/FeaturedProducts';
@@ -27,10 +26,6 @@ export default function HomePage() {
       <div className="bg-white border-y border-gray-200">
         <ShopByCategory />
       </div>
-
-      {/* 2. PROMOTIONS BANNER */}
-      <PromotionsBanner />
-
 
 
       {/* 3. LATEST ADDED PRODUCTS */}
