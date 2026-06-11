@@ -10,13 +10,13 @@ import { db } from '../../../lib/firebase/client';
 
 export default function AdminOverviewPage() {
   const [loading, setLoading] = useState(true);
-  
+
   // Real Data States
   const [revenue, setRevenue] = useState(0);
   const [totalOrders, setTotalOrders] = useState(0);
   const [totalCustomers, setTotalCustomers] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
-  
+
   const [recentOrders, setRecentOrders] = useState<any[]>([]);
   const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
   const [pendingTestimonialsCount, setPendingTestimonialsCount] = useState(0);
@@ -33,10 +33,10 @@ export default function AdminOverviewPage() {
         ordersSnap.forEach((doc) => {
           const data = doc.data();
           allOrders.push({ id: doc.id, ...data });
-          
+
           // Add to revenue (handle both total and totalAmount naming conventions)
           calculatedRevenue += Number(data.totalAmount || data.total || 0);
-          
+
           // Check for pending status
           if (data.status === 'pending' || data.status === 'Processing' || !data.status) {
             pendingOrders++;
@@ -55,9 +55,17 @@ export default function AdminOverviewPage() {
         }).slice(0, 5);
         setRecentOrders(sortedOrders);
 
-        // 2. Fetch Total Customers
-        const usersSnap = await getDocs(query(collection(db, 'users'), where('role', '==', 'user')));
-        setTotalCustomers(usersSnap.size);
+        // 2. Fetch Total Customers (Accurate Calculation)
+        // Fetch everyone, then count only the ones who are NOT admins. 
+        // This catches users even if they don't have a specific 'role' field attached to them.
+        const usersSnap = await getDocs(collection(db, 'users'));
+        let customerCount = 0;
+        usersSnap.forEach((doc) => {
+          if (doc.data().role !== 'admin') {
+            customerCount++;
+          }
+        });
+        setTotalCustomers(customerCount);
 
         // 3. Fetch Total Products
         const productsSnap = await getDocs(collection(db, 'products'));
@@ -142,7 +150,7 @@ export default function AdminOverviewPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
+
         {/* Recent Orders Table */}
         <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
@@ -221,7 +229,7 @@ export default function AdminOverviewPage() {
                     </div>
                   </li>
                 )}
-                
+
                 {pendingTestimonialsCount > 0 && (
                   <li className="flex gap-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
                     <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
