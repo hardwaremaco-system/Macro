@@ -10,7 +10,6 @@ import FeaturedProducts from '../../components/shop/FeaturedProducts';
 import NewsEventsPreview from '../../components/shop/NewsEventsPreview';
 import TrustedBrands from '../../components/shop/TrustedBrands';
 import Testimonials from '../../components/shop/Testimonials';
-import StoreLocationMap from '../../components/shop/StoreLocationMap';
 
 export default function HomePage() {
   return (
@@ -18,6 +17,10 @@ export default function HomePage() {
       
       {/* 1. HERO SECTION */}
       <HeroSection />
+{/* 7. TRUSTED BRANDS SCROLLER */}
+      <TrustedBrands />
+
+
 {/* 4. SHOP BY CATEGORY (2x3 Grid with Transparent Photos) */}
       <div className="bg-white border-y border-gray-200">
         <ShopByCategory />
@@ -41,11 +44,8 @@ export default function HomePage() {
       {/* 6. TESTIMONIALS */}
       <Testimonials />
 
-      {/* 7. TRUSTED BRANDS SCROLLER */}
-      <TrustedBrands />
-
-      {/* 8. LIVE MAP & LOCATION SECTION */}
-      <StoreLocationMap />
+      
+      
 
     </div>
   );
