@@ -1,10 +1,6 @@
 // src/components/shop/ProductCard.tsx
-'use client';
-
 import React from 'react';
 import Link from 'next/link';
-import { ShoppingCart } from 'lucide-react';
-import { useCartStore } from '../../store/useCartStore';
 
 export interface ProductData {
   id: string;
@@ -15,22 +11,13 @@ export interface ProductData {
   image: string;
   stock?: number;
   isPromo?: boolean;
+  unit?: string; // Added to support unit/size (e.g., 50kg, 1L)
 }
 
 export default function ProductCard({ product }: { product: ProductData }) {
-  const addItem = useCartStore((state) => state.addItem);
-
-  const handleAddToCart = (e: React.MouseEvent) => {
-    e.preventDefault(); 
-    addItem({ ...product, name: product.title }, 1);
-    alert(`${product.title} added to cart!`);
-  };
-
   const discountPercentage = product.originalPrice 
     ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100) 
     : 0;
-
-  const currentStock = product.stock !== undefined ? product.stock : 99;
 
   return (
     <Link href={`/product/${product.id}`} className="group flex flex-col bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all relative">
@@ -57,40 +44,34 @@ export default function ProductCard({ product }: { product: ProductData }) {
         )}
       </div>
 
-      {/* Product Content - Reduced overall padding slightly to tighten up */}
-      <div className="p-3 flex flex-col flex-grow">
+      {/* Product Content - Left aligned with balanced vertical spacing */}
+      <div className="p-3 sm:p-4 flex flex-col flex-grow text-left">
 
-        {/* Removed min-h-[40px] so short titles don't leave empty vertical space */}
-        <h3 className="text-sm font-medium text-gray-800 line-clamp-2 leading-tight">
+        {/* 1. Name */}
+        <h3 className="text-sm sm:text-base font-bold text-slate-800 line-clamp-2 leading-snug">
           {product.title}
         </h3>
 
-        {/* Reduced mt-2 to mt-1 */}
-        <div className="mt-1 flex-grow">
-          <div className="text-lg font-black text-gray-900 leading-tight">
+        {/* 2. Unit / Size */}
+        <div className="text-[11px] sm:text-xs font-medium text-gray-500 mt-1 mb-2">
+          {product.unit || '1 Unit'}
+        </div>
+
+        {/* 3. Divider Line - Pushes the price perfectly to the bottom */}
+        <div className="border-t border-gray-100 w-full mt-auto mb-2.5"></div>
+
+        {/* 4. Price (Largest emphasis) */}
+        <div>
+          <div className="text-lg sm:text-xl font-black text-slate-900 leading-none">
             UGX {Number(product.price).toLocaleString()}
           </div>
           {product.originalPrice && (
-            <div className="text-xs text-gray-400 line-through">
+            <div className="text-[11px] text-gray-400 line-through mt-1.5 font-medium">
               UGX {Number(product.originalPrice).toLocaleString()}
             </div>
           )}
         </div>
-
-        {/* Reduced margins and paddings from 3 to 2 to pull the footer up */}
-        <div className="mt-2 pt-2 border-t border-gray-50 flex items-center justify-between">
-          <span className={`text-[10px] font-bold uppercase ${currentStock > 10 ? 'text-emerald-500' : 'text-orange-500'}`}>
-            {currentStock > 0 ? (currentStock > 10 ? 'In Stock' : `Only ${currentStock} left`) : 'Out of Stock'}
-          </span>
-
-          <button 
-            onClick={handleAddToCart}
-            disabled={currentStock === 0}
-            className="w-8 h-8 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-blue-50 disabled:hover:text-blue-600"
-          >
-            <ShoppingCart size={16} strokeWidth={2.5} />
-          </button>
-        </div>
+        
       </div>
     </Link>
   );
