@@ -9,7 +9,7 @@ export default function HeroSection() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
-          src="https://images.unsplash.com/photo-1541888086225-eb9533f81156?q=80&w=2070&auto=format&fit=crop" 
+          src="https://images.unsplash.com/photo-1580810734898-5e1753f23337?w=1200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y29uc3RydWN0aW9uJTIwaGFyZHdhcmUlMjBtYXRlcmlhbHN8ZW58MHx8MHx8fDA%3D" 
           alt="Construction Materials Background" 
           className="w-full h-full object-cover opacity-30"
         />
@@ -21,7 +21,7 @@ export default function HeroSection() {
           Building the Future of the <span className="text-amber-500">Western Region.</span>
         </h1>
         <p className="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl leading-relaxed">
-          Premium cement, roofing, plumbing, and electrical materials delivered directly to your site. Order online and pay on delivery.
+          Premium cement, roofing, plumbing, and construction materials delivered directly to your site. Order online and pick at the store with ease.
         </p>
         
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
