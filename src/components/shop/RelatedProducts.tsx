@@ -37,17 +37,17 @@ export default function RelatedProducts({ category, currentProductId }: { catego
   if (loading || products.length === 0) return null;
 
   return (
-    // Gray background container with blue top border divider
-    <div className="mt-16 bg-gray-50 border-t-[3px] border-blue-600 py-12">
+    // Added w-full for edge-to-edge, reduced mt-16 to mt-8, and py-12 to py-6
+    <div className="w-full mt-8 bg-gray-50 border-t-[3px] border-blue-600 py-6">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
-        {/* Black heading */}
-        <h2 className="text-lg font-black text-black mb-6 uppercase tracking-wide">
+        {/* Black heading with slightly reduced bottom margin */}
+        <h2 className="text-lg font-black text-black mb-4 uppercase tracking-wide">
           You Might Also Like
         </h2>
 
         {/* Horizontal Scroll Container */}
-        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
           {products.map(product => (
             <div key={product.id} className="w-[160px] sm:w-[220px] shrink-0 snap-start flex">
               <div className="w-full">
