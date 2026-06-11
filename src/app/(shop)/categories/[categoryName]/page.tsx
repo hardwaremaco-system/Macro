@@ -7,15 +7,21 @@ import { collection, query, where, getDocs } from 'firebase/firestore';
 import { ArrowLeft, PackageX } from 'lucide-react';
 // Strict relative paths
 import { db } from '../../../../lib/firebase/client';
+import { STORE_CATEGORIES } from '../../../../lib/categories';
 import ProductCard, { ProductData } from '../../../../components/shop/ProductCard';
 
 export default function CategoryProductsPage() {
   const params = useParams();
   const router = useRouter();
+  const rawSlug = params.categoryName as string;
+
+  // Use the central file to find the EXACT category name from the URL slug
+  const categoryConfig = STORE_CATEGORIES.find(c => c.slug === rawSlug);
   
-  // Extract and format the category from the URL slug (e.g., "roofing" -> "Roofing")
-  const rawCategory = params.categoryName as string;
-  const formattedCategoryName = rawCategory.charAt(0).toUpperCase() + rawCategory.slice(1).toLowerCase();
+  // Fallback in case a user types a random category in the URL
+  const exactCategoryName = categoryConfig 
+    ? categoryConfig.name 
+    : rawSlug.charAt(0).toUpperCase() + rawSlug.slice(1).toLowerCase();
 
   const [products, setProducts] = useState<ProductData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +31,7 @@ export default function CategoryProductsPage() {
       try {
         const q = query(
           collection(db, 'products'), 
-          where('category', '==', formattedCategoryName)
+          where('category', '==', exactCategoryName)
         );
         const snapshot = await getDocs(q);
         
@@ -36,35 +42,38 @@ export default function CategoryProductsPage() {
         
         setProducts(productsData);
       } catch (error) {
-        console.error(`Error fetching products for ${formattedCategoryName}:`, error);
+        console.error(`Error fetching products for ${exactCategoryName}:`, error);
       } finally {
         setLoading(false);
       }
     }
 
-    if (formattedCategoryName) {
-      fetchCategoryProducts();
-    }
-  }, [formattedCategoryName]);
+    fetchCategoryProducts();
+  }, [exactCategoryName]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-      {/* Header & Back Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4 border-b border-gray-200 pb-6">
         <div>
           <button onClick={() => router.back()} className="text-sm font-bold text-gray-500 hover:text-blue-600 flex items-center transition-colors mb-4">
             <ArrowLeft size={16} className="mr-1" /> Back
           </button>
-          <h1 className="text-3xl font-black text-gray-900">
-            {formattedCategoryName} Materials
-          </h1>
-          <p className="text-gray-500 mt-2 text-sm">
-            Showing {products.length} {products.length === 1 ? 'result' : 'results'}
-          </p>
+          <div className="flex items-center">
+            {categoryConfig && (
+              <img src={categoryConfig.image} alt="Icon" className="w-10 h-10 object-contain mr-4" />
+            )}
+            <div>
+              <h1 className="text-3xl font-black text-gray-900">
+                {exactCategoryName} Materials
+              </h1>
+              <p className="text-gray-500 mt-1 text-sm">
+                Showing {products.length} {products.length === 1 ? 'result' : 'results'}
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Products Grid */}
       {loading ? (
         <div className="flex justify-center items-center py-20">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600"></div>
@@ -76,7 +85,7 @@ export default function CategoryProductsPage() {
           </div>
           <h2 className="text-lg font-black text-gray-900 mb-2">No products found</h2>
           <p className="text-gray-500 max-w-md mx-auto">
-            We currently don't have any products listed under {formattedCategoryName}. Check back soon as we restock our inventory!
+            We currently don&apos;t have any products listed under {exactCategoryName}. Check back soon as we restock our inventory!
           </p>
         </div>
       ) : (
