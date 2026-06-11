@@ -11,7 +11,7 @@ export interface ProductData {
   image: string;
   stock?: number;
   isPromo?: boolean;
-  unit?: string; // Added to support unit/size (e.g., 50kg, 1L)
+  unit?: string; 
 }
 
 export default function ProductCard({ product }: { product: ProductData }) {
@@ -47,31 +47,31 @@ export default function ProductCard({ product }: { product: ProductData }) {
       {/* Product Content - Left aligned with balanced vertical spacing */}
       <div className="p-3 sm:p-4 flex flex-col flex-grow text-left">
 
-        {/* 1. Name */}
-        <h3 className="text-sm sm:text-base font-bold text-slate-800 line-clamp-2 leading-snug">
-          {product.title}
-        </h3>
-
-        {/* 2. Unit / Size */}
-        <div className="text-[11px] sm:text-xs font-medium text-gray-500 mt-1 mb-2">
+        {/* 1. Unit / Size (Top, using the old title's text-sm/base size) */}
+        <div className="text-sm sm:text-base font-bold text-gray-400 mb-1 leading-none">
           {product.unit || '1 Unit'}
         </div>
 
-        {/* 3. Divider Line - Pushes the price perfectly to the bottom */}
-        <div className="border-t border-gray-100 w-full mt-auto mb-2.5"></div>
+        {/* 2. Name (Middle, sized exactly between the unit and the price) */}
+        <h3 className="text-base sm:text-lg font-black text-slate-800 line-clamp-2 leading-snug">
+          {product.title}
+        </h3>
 
-        {/* 4. Price (Largest emphasis) */}
+        {/* 3. Divider Line - Pushes the price perfectly to the bottom */}
+        <div className="border-t border-gray-100 w-full mt-auto pt-3 mb-1"></div>
+
+        {/* 4. Price (Bottom, largest emphasis text-xl/2xl) */}
         <div>
-          <div className="text-lg sm:text-xl font-black text-slate-900 leading-none">
+          <div className="text-xl sm:text-2xl font-black text-slate-900 leading-none">
             UGX {Number(product.price).toLocaleString()}
           </div>
           {product.originalPrice && (
-            <div className="text-[11px] text-gray-400 line-through mt-1.5 font-medium">
+            <div className="text-xs text-gray-400 line-through mt-1.5 font-medium">
               UGX {Number(product.originalPrice).toLocaleString()}
             </div>
           )}
         </div>
-        
+
       </div>
     </Link>
   );
