@@ -3,9 +3,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { collection, query, where, limit, getDocs } from 'firebase/firestore';
+// Strict relative path
 import { db } from '../../lib/firebase/client';
 import ProductCard, { ProductData } from './ProductCard';
-import { Star } from 'lucide-react';
 
 export default function FeaturedProducts() {
   const [products, setProducts] = useState<ProductData[]>([]);
@@ -20,7 +20,7 @@ export default function FeaturedProducts() {
           where('isFeatured', '==', true),
           limit(5)
         );
-        
+
         const snapshot = await getDocs(q);
         const featuredData = snapshot.docs.map(doc => ({
           id: doc.id,
@@ -43,14 +43,9 @@ export default function FeaturedProducts() {
 
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="flex items-center space-x-2 mb-8">
-        <div className="bg-amber-100 p-2 rounded-lg text-amber-600">
-          <Star size={20} fill="currentColor" />
-        </div>
-        <div>
-          <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Featured Materials</h2>
-          <p className="text-sm text-gray-500">Handpicked top-quality recommendations for your projects</p>
-        </div>
+      <div className="mb-8">
+        <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Featured Materials</h2>
+        <p className="text-sm text-gray-500 mt-1">Handpicked top-quality recommendations for your projects</p>
       </div>
 
       {loading ? (
