@@ -1,3 +1,4 @@
+// src/components/shop/FeaturedProducts.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
@@ -12,7 +13,8 @@ export default function FeaturedProducts() {
   useEffect(() => {
     async function fetchFeaturedProducts() {
       try {
-        const q = query(collection(db, 'products'), where('isFeatured', '==', true), limit(5));
+        // Increased limit to 15 products
+        const q = query(collection(db, 'products'), where('isFeatured', '==', true), limit(15));
         const snapshot = await getDocs(q);
         const featuredData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as ProductData[];
         setProducts(featuredData);
@@ -33,13 +35,20 @@ export default function FeaturedProducts() {
         <h2 className="text-2xl sm:text-3xl font-black text-gray-900">Featured Materials</h2>
         <p className="text-sm text-gray-500 mt-1">Handpicked top-quality recommendations for your projects</p>
       </div>
+      
       {loading ? (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-          {[...Array(5)].map((_, i) => <div key={i} className="animate-pulse bg-gray-200 h-64 rounded-2xl"></div>)}
+        // Loading Skeletons: Updated grid classes and array size to match the new 15 limit
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+          {[...Array(15)].map((_, i) => (
+            <div key={i} className="animate-pulse bg-gray-200 aspect-[4/5] sm:aspect-square rounded-2xl"></div>
+          ))}
         </div>
       ) : (
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-          {products.map((product) => <ProductCard key={product.id} product={product} />)}
+        // Products Grid: 2 on mobile, 3 on tablet, 4 on small desktop, 5 on large screens
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 sm:gap-4">
+          {products.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
         </div>
       )}
     </section>
