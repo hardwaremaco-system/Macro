@@ -1,125 +1,112 @@
 // src/app/(shop)/page.tsx
-'use client';
-
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { MapPin, ArrowRight } from 'lucide-react';
 
-// Forced relative paths to bypass alias failure
-import HeroSection from '../../components/shop/HeroSection';
-import TrustStrip from '../../components/shop/TrustStrip';
-import CategoryRow from '../../components/shop/CategoryRow';
-import ProductCard, { ProductData } from '../../components/shop/ProductCard';
+// Strict relative imports for all our dynamic components
 import PromotionsBanner from '../../components/shop/PromotionsBanner';
-import TrustedBrands from '../../components/shop/TrustedBrands';
-import WhyChooseUs from '../../components/shop/WhyChooseUs';
+import LatestProducts from '../../components/shop/LatestProducts';
 import NewsEventsPreview from '../../components/shop/NewsEventsPreview';
+import TrustedBrands from '../../components/shop/TrustedBrands';
 import Testimonials from '../../components/shop/Testimonials';
-import { db } from '../../lib/firebase/client';
 
 export default function HomePage() {
-  const [featuredProducts, setFeaturedProducts] = useState<ProductData[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchLatestProducts() {
-      try {
-        // Fetch the 10 most recently added products from Firestore
-        const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'), limit(10));
-        const snapshot = await getDocs(q);
-        
-        const productsData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        })) as ProductData[];
-        
-        setFeaturedProducts(productsData);
-      } catch (error) {
-        console.error('Error fetching live products:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchLatestProducts();
-  }, []);
-
   return (
-    <div className="flex flex-col gap-6 pb-0 overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       
-      {/* 1. Hero Banner Slider / Bento */}
-      <HeroSection />
-
-      {/* 2. Product Search Bar (Mobile Focus - Desktop search is in the Header) */}
-      <div className="md:hidden px-4 mt-2">
-        <div className="bg-white border border-gray-200 rounded-lg p-3 flex items-center shadow-sm">
-          <span className="text-gray-400 mx-2">🔍</span>
-          <input 
-            type="text" 
-            placeholder="Search products, brands..." 
-            className="w-full outline-none text-sm bg-transparent"
+      {/* 1. HERO SECTION (Cleaned up, Search Removed) */}
+      <section className="relative bg-gray-900 text-white pt-20 pb-24 lg:pt-32 lg:pb-40 overflow-hidden">
+        {/* Background Image with Overlay */}
+        <div className="absolute inset-0">
+          <img 
+            src="https://images.unsplash.com/photo-1541888086225-eb9533f81156?q=80&w=2070&auto=format&fit=crop" 
+            alt="Construction Materials Background" 
+            className="w-full h-full object-cover opacity-30"
           />
+          <div className="absolute inset-0 bg-gradient-to-r from-gray-900 via-gray-900/90 to-transparent"></div>
         </div>
-      </div>
 
-      {/* 3. Trust Strip */}
-      <TrustStrip />
-
-      {/* 4. Product Categories */}
-      <CategoryRow />
-
-      {/* 5. LIVE Featured Products */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-black text-gray-900">Featured Products</h2>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-start">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight leading-tight mb-6 max-w-3xl">
+            Building the Future of the <span className="text-amber-500">Western Region.</span>
+          </h1>
+          <p className="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl leading-relaxed">
+            Premium cement, roofing, plumbing, and electrical materials delivered directly to your site. Order online and pay on delivery.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+            <Link href="/categories" className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center">
+              Shop Materials <ArrowRight size={20} className="ml-2" />
+            </Link>
+            <Link href="/promotions" className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-colors flex items-center justify-center">
+              View Special Offers
+            </Link>
+          </div>
         </div>
-        
-        {loading ? (
-          <div className="flex justify-center items-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-          </div>
-        ) : featuredProducts.length === 0 ? (
-          <div className="bg-white border border-dashed border-gray-300 rounded-xl p-8 text-center text-gray-500">
-            No products available yet. Add some from the Admin Dashboard!
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-4">
-            {featuredProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
       </section>
 
-      {/* 6. Promotions & Special Offers */}
+      {/* 2. PROMOTIONS BANNER (Hidden if empty) */}
       <PromotionsBanner />
 
-      {/* 7. Trusted Brands */}
-      <TrustedBrands />
+      {/* 3. LATEST ADDED PRODUCTS */}
+      <LatestProducts />
 
-      {/* 8. Why Choose Macro Hardware */}
-      <WhyChooseUs />
+      {/* 4. NEWS & EVENTS */}
+      <div className="bg-white border-y border-gray-200 py-8">
+        <NewsEventsPreview />
+      </div>
 
-      {/* 9. News & Events Preview */}
-      <NewsEventsPreview />
-
-      {/* 10. Testimonials */}
+      {/* 5. TESTIMONIALS */}
       <Testimonials />
 
-      {/* 11. Contact Call-to-Action */}
-      <section className="bg-amber-500 py-12 sm:py-16 text-center text-white">
-        <div className="max-w-4xl mx-auto px-4">
-          <h2 className="text-2xl sm:text-4xl font-black mb-4">Ready to start your next project?</h2>
-          <p className="text-amber-100 mb-8 max-w-2xl mx-auto text-sm sm:text-base">
-            Get a free quote for bulk orders or speak to one of our hardware experts today. We are locally based right here in Kabale.
-          </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/contact" className="bg-white text-amber-600 px-8 py-3 rounded-full font-bold shadow-md hover:shadow-lg hover:bg-gray-50 transition-all w-full sm:w-auto">
-              Contact Us Now
-            </Link>
-            <a href="https://wa.me/256700000000" target="_blank" rel="noopener noreferrer" className="bg-green-600 text-white px-8 py-3 rounded-full font-bold shadow-md hover:shadow-lg hover:bg-green-700 transition-all w-full sm:w-auto flex items-center justify-center">
-              Chat on WhatsApp
-            </a>
+      {/* 6. TRUSTED BRANDS SCROLLER */}
+      <TrustedBrands />
+
+      {/* 7. LIVE MAP & LOCATION SECTION (Replaces old CTA) */}
+      <section className="bg-white py-16 lg:py-24 border-t border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            
+            {/* Text & Details Context */}
+            <div>
+              <div className="inline-flex items-center bg-blue-50 text-blue-700 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider mb-6">
+                <MapPin size={14} className="mr-1.5" /> Visit Our Store
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-black text-gray-900 leading-tight mb-6">
+                Locate us in the heart of Kabale.
+              </h2>
+              <p className="text-gray-600 text-lg mb-8 leading-relaxed">
+                Prefer to view your materials in person before making a bulk order? Visit our physical hardware branch. Our experts are on standby to help you calculate your material estimates.
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex items-start">
+                  <div className="bg-gray-100 p-3 rounded-lg mr-4">
+                    <MapPin className="text-amber-500" size={24} />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-900">Physical Address</h4>
+                    <p className="text-gray-600">Main Street, Kabale Town, Uganda</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+                        {/* Interactive Google Map Embedded */}
+            <div className="h-[400px] w-full rounded-2xl overflow-hidden shadow-lg border border-gray-200 relative group">
+              <iframe
+                src="https://maps.app.goo.gl/8BkGudV5rNpvXmQ9A"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={true}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="grayscale group-hover:grayscale-0 transition-all duration-700 ease-in-out"
+              ></iframe>
+            </div>
+
+
           </div>
         </div>
       </section>
