@@ -67,8 +67,8 @@ export default function ShopByCategory() {
             href={`/categories/${cat.slug}`}
             className="flex flex-col items-center group cursor-pointer"
           >
-            {/* The Colored Box (Squarcle) */}
-            <div className={`w-full aspect-square rounded-2xl sm:rounded-3xl ${cat.bgColor} relative flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-300 group-hover:-translate-y-2 shadow-sm`}>
+            {/* The Colored Box (Square) */}
+            <div className={`w-full aspect-square ${cat.bgColor} relative flex items-center justify-center mb-3 sm:mb-4 transition-transform duration-300 group-hover:-translate-y-2 shadow-sm`}>
 
               {/* The Image 
                 w-[120%] and h-[120%] forces the image to be larger than the box.
