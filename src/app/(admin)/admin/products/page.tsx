@@ -4,18 +4,13 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
-import { Plus, Edit, Trash2, Star, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Star, Image as ImageIcon } from 'lucide-react';
 // Strict relative paths
 import { db } from '../../../../lib/firebase/client';
-import { STORE_CATEGORIES } from '../../../../lib/categories';
 
 export default function AdminProductsList() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  
-  // Edit Modal State
-  const [editingProduct, setEditingProduct] = useState<any | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -52,24 +47,6 @@ export default function AdminProductsList() {
     }
   };
 
-  const handleSaveEdit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsUpdating(true);
-    try {
-      await updateDoc(doc(db, 'products', editingProduct.id), {
-        title: editingProduct.title,
-        price: Number(editingProduct.price),
-        category: editingProduct.category,
-      });
-      setProducts(products.map(p => p.id === editingProduct.id ? editingProduct : p));
-      setEditingProduct(null);
-    } catch (error) {
-      alert('Failed to update product.');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
   return (
     <div className="flex flex-col h-full relative">
       <div className="flex justify-between items-center mb-8">
@@ -79,7 +56,7 @@ export default function AdminProductsList() {
         </div>
         <Link 
           href="/admin/products/upload" 
-          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm"
+          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm transition-colors"
         >
           <Plus size={18} className="mr-2" /> Add New Product
         </Link>
@@ -137,10 +114,15 @@ export default function AdminProductsList() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end space-x-2">
-                        <button onClick={() => setEditingProduct(product)} className="p-2 bg-gray-100 text-gray-600 rounded hover:bg-blue-600 hover:text-white transition-colors" title="Edit">
+                        {/* Changed this button into a Link pointing directly to the new edit page */}
+                        <Link 
+                          href={`/admin/products/edit/${product.id}`} 
+                          className="p-2 bg-gray-100 text-gray-600 rounded hover:bg-blue-600 hover:text-white transition-colors inline-flex" 
+                          title="Edit"
+                        >
                           <Edit size={16} />
-                        </button>
-                        <button onClick={() => handleDelete(product.id)} className="p-2 bg-red-50 text-red-600 rounded hover:bg-red-600 hover:text-white transition-colors" title="Delete">
+                        </Link>
+                        <button onClick={() => handleDelete(product.id)} className="p-2 bg-red-50 text-red-600 rounded hover:bg-red-600 hover:text-white transition-colors inline-flex" title="Delete">
                           <Trash2 size={16} />
                         </button>
                       </div>
@@ -152,39 +134,6 @@ export default function AdminProductsList() {
           </table>
         </div>
       </div>
-
-      {/* Quick Edit Modal */}
-      {editingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-lg font-black">Edit Product Details</h2>
-              <button onClick={() => setEditingProduct(null)}><X size={24} className="text-gray-400 hover:text-red-500" /></button>
-            </div>
-            <form onSubmit={handleSaveEdit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Product Title</label>
-                <input required value={editingProduct.title} onChange={(e) => setEditingProduct({...editingProduct, title: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Price (UGX)</label>
-                <input required type="number" value={editingProduct.price} onChange={(e) => setEditingProduct({...editingProduct, price: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" />
-              </div>
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-1">Category</label>
-                <select value={editingProduct.category} onChange={(e) => setEditingProduct({...editingProduct, category: e.target.value})} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
-                  {STORE_CATEGORIES.map(cat => (
-                    <option key={cat.slug} value={cat.name}>{cat.name}</option>
-                  ))}
-                </select>
-              </div>
-              <button type="submit" disabled={isUpdating} className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 mt-4">
-                {isUpdating ? 'Saving...' : 'Save Changes'}
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
