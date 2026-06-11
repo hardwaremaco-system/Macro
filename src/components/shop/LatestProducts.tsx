@@ -16,7 +16,6 @@ export default function LatestProducts() {
   useEffect(() => {
     async function fetchLatestProducts() {
       try {
-        // Fetch the 5 most recently created products
         const q = query(
           collection(db, 'products'), 
           orderBy('createdAt', 'desc'), 
@@ -47,7 +46,8 @@ export default function LatestProducts() {
         <h2 className="text-2xl font-black text-gray-900">
           Latest Added
         </h2>
-        <Link href="/categories" className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center transition-colors">
+        {/* Updated Link Destination */}
+        <Link href="/products" className="text-sm font-bold text-blue-600 hover:text-blue-800 flex items-center transition-colors">
           View All <ArrowRight size={16} className="ml-1" />
         </Link>
       </div>
