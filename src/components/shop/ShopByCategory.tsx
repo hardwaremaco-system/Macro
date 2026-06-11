@@ -46,6 +46,19 @@ export default function ShopByCategory() {
   return (
     <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16">
       
+      {/* Header with Heading on Left and "View All" Link on Right */}
+      <div className="flex justify-between items-end mb-8 border-b border-gray-100 pb-2">
+        <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
+          Shop by Category
+        </h2>
+        <Link 
+          href="/categories" 
+          className="text-sm font-black text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-wider mb-1"
+        >
+          View All &rarr;
+        </Link>
+      </div>
+
       {/* 2 Rows x 3 Columns on Mobile -> 1 Row x 6 Columns on Desktop */}
       <div className="grid grid-cols-3 lg:grid-cols-6 gap-x-3 gap-y-8 sm:gap-6">
         {HOMEPAGE_CATEGORIES.map((cat) => (
