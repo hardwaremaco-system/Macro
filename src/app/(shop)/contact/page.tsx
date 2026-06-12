@@ -13,7 +13,7 @@ export default function ContactPage() {
     e.preventDefault();
     setStatus('sending');
     setErrorMessage(''); // Reset error message
-    
+
     try {
       const response = await fetch('/api/email/contact', {
         method: 'POST',
@@ -30,10 +30,10 @@ export default function ContactPage() {
 
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });
-      
+
       // Clear the success message after 5 seconds
       setTimeout(() => setStatus(''), 5000);
-      
+
     } catch (error: any) {
       console.error('Error sending message:', error);
       setStatus('error');
@@ -46,7 +46,7 @@ export default function ContactPage() {
       <div className="text-center max-w-3xl mx-auto mb-16">
         <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Contact Us</h1>
         <p className="text-gray-600">
-          Whether you need a quote for a large construction project or just have a question about a product, our team in Kabale is ready to help.
+          Whether you are ready to open a <strong>Build & Invest</strong> account, need a quote for a large construction project, or just have a question about a product, our team in Kabale is ready to help.
         </p>
       </div>
 
@@ -129,8 +129,20 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">Subject</label>
-                <input required type="text" value={formData.subject} onChange={(e) => setFormData({...formData, subject: e.target.value})} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Product Inquiry / Quote Request" />
+                <label className="block text-sm font-bold text-gray-700 mb-2">What are you inquiring about?</label>
+                <select 
+                  required 
+                  value={formData.subject} 
+                  onChange={(e) => setFormData({...formData, subject: e.target.value})} 
+                  className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white"
+                >
+                  <option value="" disabled>Select a subject...</option>
+                  <option value="Build & Invest Account">Open a Build & Invest Account</option>
+                  <option value="Bulk Order / Quotation">Bulk Material Order / Quotation</option>
+                  <option value="Delivery Inquiry">Delivery Inquiry</option>
+                  <option value="General Support">General Support</option>
+                  <option value="Other">Other</option>
+                </select>
               </div>
 
               <div>
