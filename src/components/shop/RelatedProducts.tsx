@@ -37,25 +37,29 @@ export default function RelatedProducts({ category, currentProductId }: { catego
   if (loading || products.length === 0) return null;
 
   return (
-    // Added w-full for edge-to-edge, reduced mt-16 to mt-8, and py-12 to py-6
     <div className="w-full mt-8 bg-gray-50 border-t-[3px] border-blue-600 py-6">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Removed horizontal padding from this wrapper so the scroller can bleed */}
+      <div className="max-w-7xl mx-auto">
 
-        {/* Black heading with slightly reduced bottom margin */}
-        <h2 className="text-lg font-black text-black mb-4 uppercase tracking-wide">
+        {/* Applied padding to the heading to keep it aligned with the page */}
+        <h2 className="text-lg font-black text-black mb-4 uppercase tracking-wide px-4 sm:px-6 lg:px-8">
           You Might Also Like
         </h2>
 
-        {/* Horizontal Scroll Container */}
-        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x">
+        {/* Applied padding inside the scroll container.
+          This ensures the first card aligns with the text, but the right side bleeds to the screen edge.
+        */}
+        <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x px-4 sm:px-6 lg:px-8">
           {products.map(product => (
-            <div key={product.id} className="w-[160px] sm:w-[220px] shrink-0 snap-start flex">
+            // Adjusted mobile width to 150px to ensure a perfect 2.5 card preview
+            <div key={product.id} className="w-[150px] sm:w-[220px] shrink-0 snap-start flex">
               <div className="w-full">
                 <ProductCard product={product} />
               </div>
             </div>
           ))}
         </div>
+        
       </div>
     </div>
   );
