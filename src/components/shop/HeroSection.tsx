@@ -9,11 +9,11 @@ export default function HeroSection() {
       {/* Background Image with Overlay */}
       <div className="absolute inset-0">
         <img 
-          src="https://images.unsplash.com/photo-1580810734898-5e1753f23337?w=1200&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8Y29uc3RydWN0aW9uJTIwaGFyZHdhcmUlMjBtYXRlcmlhbHN8ZW58MHx8MHx8fDA%3D" 
+          src="/macro.png" 
           alt="Construction Materials Background" 
           className="w-full h-full object-cover opacity-30"
         />
-        <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-gray-900/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-r from-gray-900/40 via-gray-900/10 to-transparent"></div>
       </div>
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-start">
