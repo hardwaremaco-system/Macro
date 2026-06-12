@@ -1,21 +1,21 @@
 // src/components/shop/Footer.tsx
 import React from 'react';
 import Link from 'next/link';
-import { Facebook, Twitter, Instagram, MapPin, Phone, Mail } from 'lucide-react';
+import { Facebook, Twitter, Instagram } from 'lucide-react';
 
 export default function Footer() {
   const currentYear = 2026;
 
   return (
-    <footer className="bg-white text-gray-600 pt-12 md:pt-16 pb-8 border-t border-gray-200 mt-auto">
+    <footer className="bg-white text-gray-600 pt-8 md:pt-16 pb-4 md:pb-8 border-t border-gray-200 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
-        {/* Main Grid: On mobile it stacks cleanly, on desktop it splits to 4 columns */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-12 mb-8 md:mb-12">
+        {/* Main Layout: Stack on mobile, Grid on desktop */}
+        <div className="flex flex-col md:grid md:grid-cols-4 gap-6 md:gap-12 mb-6 md:mb-12">
 
-          {/* 1. Brand Info (Always Visible) */}
+          {/* 1. Brand Info & Description (Always First) */}
           <div className="order-1">
-            <Link href="/" className="flex items-center mb-4 md:mb-6">
+            <Link href="/" className="flex items-center mb-3 md:mb-6">
               <img 
                 src="/logo.png" 
                 alt="Logo" 
@@ -25,10 +25,10 @@ export default function Footer() {
                 MACRO <span className="text-amber-500">HARDWARE</span>
               </span>
             </Link>
-            <p className="text-sm text-gray-500 mb-2 md:mb-6 leading-relaxed">
+            <p className="text-sm text-gray-600 leading-relaxed mb-1 md:mb-6">
               Your trusted partner for premium building materials, construction supplies, and hardware in the Western Region.
             </p>
-            {/* Social Icons - Hidden on Mobile */}
+            {/* Social Icons - Hidden on Mobile to save space */}
             <div className="hidden md:flex space-x-3">
               <a href="#" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition-colors">
                 <Facebook size={18} />
@@ -42,57 +42,58 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 2. Contact Details (Pulled up on Mobile to sit right under the text) */}
-          <div className="order-2 md:order-4">
-            <h3 className="hidden md:block text-gray-900 font-black mb-4 uppercase tracking-wider text-sm">Contact Us</h3>
-            <ul className="space-y-3 md:space-y-4 text-sm font-medium">
-              <li className="flex items-start">
-                <MapPin size={18} className="mr-3 text-amber-500 flex-shrink-0 mt-0.5" />
-                <span>Kabale Town, Western Region,<br className="hidden md:block"/> Uganda</span>
-              </li>
-              <li className="flex items-center">
-                <Phone size={18} className="mr-3 text-amber-500 flex-shrink-0" />
-                <span>+256 700 000 000</span>
-              </li>
-              {/* Email - Hidden on Mobile */}
-              <li className="hidden md:flex items-center">
-                <Mail size={18} className="mr-3 text-amber-500 flex-shrink-0" />
-                <span>support@macrohardware.com</span>
-              </li>
-            </ul>
+          {/* 2. Mobile-Only Links (Stacked uniformly, light blue underline) */}
+          <div className="order-2 md:hidden flex flex-col space-y-3 text-sm">
+            <Link href="/profile" className="text-gray-600 underline decoration-blue-300 underline-offset-4 hover:text-blue-600">
+              My Account
+            </Link>
+            <Link href="/contact" className="text-gray-600 underline decoration-blue-300 underline-offset-4 hover:text-blue-600">
+              Contact Us
+            </Link>
+            <Link href="/terms" className="text-gray-600 underline decoration-blue-300 underline-offset-4 hover:text-blue-600">
+              Terms & Conditions
+            </Link>
           </div>
 
-          {/* 3. Quick Links (Hidden entirely on Mobile) */}
-          <div className="hidden md:block order-none md:order-2">
+          {/* 2. Desktop-Only Quick Links */}
+          <div className="hidden md:block order-2">
             <h3 className="text-gray-900 font-black mb-4 uppercase tracking-wider text-sm">Quick Links</h3>
             <ul className="space-y-3 text-sm">
-              <li><Link href="/" className="hover:text-blue-600 font-medium transition-colors">Home</Link></li>
-              <li><Link href="/profile" className="hover:text-blue-600 font-medium transition-colors">My Account</Link></li>
-              <li><Link href="/gallery" className="hover:text-blue-600 font-medium transition-colors">Project Gallery</Link></li>
-              <li><Link href="/news" className="hover:text-blue-600 font-medium transition-colors">News & Events</Link></li>
+              <li><Link href="/" className="hover:text-blue-600 transition-colors">Home</Link></li>
+              <li><Link href="/profile" className="hover:text-blue-600 transition-colors">My Account</Link></li>
+              <li><Link href="/gallery" className="hover:text-blue-600 transition-colors">Project Gallery</Link></li>
+              <li><Link href="/news" className="hover:text-blue-600 transition-colors">News & Events</Link></li>
             </ul>
           </div>
 
-          {/* 4. Customer Service (Filtered for Mobile, Stacked Vertically) */}
-          <div className="order-3 md:order-3 pt-3 md:pt-0 border-t border-gray-100 md:border-none">
-            <h3 className="hidden md:block text-gray-900 font-black mb-4 uppercase tracking-wider text-sm">Customer Service</h3>
-            
-            <ul className="flex flex-col space-y-3 md:space-y-3 text-sm">
-              <li><Link href="/contact" className="text-amber-600 md:text-gray-600 hover:text-blue-600 font-bold md:font-medium transition-colors inline-block py-1 md:py-0">Contact Us</Link></li>
-              <li className="hidden md:block"><Link href="/faq" className="hover:text-blue-600 font-medium transition-colors">FAQs</Link></li>
-              <li className="hidden md:block"><Link href="/delivery" className="hover:text-blue-600 font-medium transition-colors">Delivery Information</Link></li>
-              <li><Link href="/terms" className="text-amber-600 md:text-gray-600 hover:text-blue-600 font-bold md:font-medium transition-colors inline-block py-1 md:py-0">Terms & Conditions</Link></li>
+          {/* 3. Desktop-Only Customer Service */}
+          <div className="hidden md:block order-3">
+            <h3 className="text-gray-900 font-black mb-4 uppercase tracking-wider text-sm">Customer Service</h3>
+            <ul className="space-y-3 text-sm">
+              <li><Link href="/contact" className="hover:text-blue-600 transition-colors">Contact Us</Link></li>
+              <li><Link href="/faq" className="hover:text-blue-600 transition-colors">FAQs</Link></li>
+              <li><Link href="/delivery" className="hover:text-blue-600 transition-colors">Delivery Information</Link></li>
+              <li><Link href="/terms" className="hover:text-blue-600 transition-colors">Terms & Conditions</Link></li>
             </ul>
+          </div>
+
+          {/* 4. Contact Details (Placed after links on mobile, uniform text, no icons, no line breaks) */}
+          <div className="order-3 md:order-4 flex flex-col space-y-3 text-sm text-gray-600 mt-2 md:mt-0">
+            <h3 className="hidden md:block text-gray-900 font-black mb-1 uppercase tracking-wider text-sm">Contact Us</h3>
+            <div>Kabale Town, Western Region, Uganda</div>
+            <div>+256 700 000 000</div>
+            {/* Email hidden on mobile to keep it essential */}
+            <div className="hidden md:block">support@macrohardware.com</div>
           </div>
 
         </div>
 
-        {/* Footer Bottom */}
-        <div className="border-t border-gray-200 pt-6 md:pt-8 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 font-medium text-center md:text-left">
-          <p>&copy; {currentYear} Macro Hardware. All rights reserved.</p>
+        {/* Footer Bottom: Reduced whitespace, uniform tracking */}
+        <div className="border-t border-gray-200 pt-4 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 font-medium text-center md:text-left">
+          <p className="tracking-wide">&copy; {currentYear} Macro Hardware. All rights reserved.</p>
           
           {/* Badges - Hidden on Mobile */}
-          <div className="hidden md:flex space-x-4">
+          <div className="hidden md:flex space-x-4 mt-4 md:mt-0">
             <span>Secure Payments</span>
             <span>Fast Delivery</span>
             <span>Genuine Products</span>
