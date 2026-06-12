@@ -10,6 +10,7 @@ import { db } from '../../../../lib/firebase/client';
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(''); // Added search state
 
   const fetchCustomers = async () => {
     setLoading(true);
@@ -31,7 +32,7 @@ export default function AdminCustomersPage() {
 
   const handleRoleChange = async (userId: string, newRole: string, currentName: string) => {
     if (!confirm(`Are you sure you want to change ${currentName}'s role to ${newRole.toUpperCase()}?`)) return;
-    
+
     try {
       await updateDoc(doc(db, 'users', userId), { role: newRole });
       // Update local state to reflect change instantly
@@ -42,6 +43,12 @@ export default function AdminCustomersPage() {
     }
   };
 
+  // Filter customers based on search input
+  const filteredCustomers = customers.filter(customer => 
+    (customer.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (customer.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
@@ -49,22 +56,26 @@ export default function AdminCustomersPage() {
           <h1 className="text-2xl font-black text-gray-900">Customer Management</h1>
           <p className="text-sm text-gray-500 mt-1">View registered users and manage their access roles.</p>
         </div>
-        
+
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search size={16} className="text-gray-400" />
           </div>
           <input 
             type="text" 
-            placeholder="Search customers..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search name or email..." 
             className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
           />
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 flex flex-col">
+        {/* MOBILE RESPONSIVE WRAPPER APPLIED HERE */}
+        <div className="overflow-x-auto w-full rounded-xl">
+          {/* MIN-WIDTH APPLIED HERE */}
+          <table className="w-full min-w-[800px] text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <th className="px-6 py-4">Customer Details</th>
@@ -81,19 +92,21 @@ export default function AdminCustomersPage() {
                     Loading customer database...
                   </td>
                 </tr>
-              ) : customers.length === 0 ? (
+              ) : filteredCustomers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-12 text-center">
                     <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
                       <Users size={24} />
                     </div>
-                    <p className="text-gray-500 font-medium">No registered customers found.</p>
+                    <p className="text-gray-500 font-medium">
+                      {searchTerm ? 'No customers match your search.' : 'No registered customers found.'}
+                    </p>
                   </td>
                 </tr>
               ) : (
-                customers.map((customer) => (
+                filteredCustomers.map((customer) => (
                   <tr key={customer.id} className="hover:bg-gray-50 transition-colors">
-                    
+
                     <td className="px-6 py-4">
                       <div className="flex items-center">
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 flex-shrink-0 ${customer.role === 'admin' ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
