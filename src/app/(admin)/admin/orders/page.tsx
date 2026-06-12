@@ -12,6 +12,7 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState(''); // Added search state
 
   const fetchOrders = async () => {
     setLoading(true);
@@ -74,6 +75,12 @@ export default function AdminOrdersPage() {
     }
   };
 
+  // Filter orders based on search input (checks both Order ID and Customer Name)
+  const filteredOrders = orders.filter(order => 
+    order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (order.customerDetails?.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
@@ -85,13 +92,21 @@ export default function AdminOrdersPage() {
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
             <Search size={16} className="text-gray-400" />
           </div>
-          <input type="text" placeholder="Search Order ID..." className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64" />
+          <input 
+            type="text" 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search Order ID or Name..." 
+            className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64" 
+          />
         </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 flex flex-col">
+        {/* MOBILE RESPONSIVE WRAPPER APPLIED HERE */}
+        <div className="overflow-x-auto w-full rounded-xl">
+          {/* MIN-WIDTH APPLIED HERE */}
+          <table className="w-full min-w-[900px] text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <th className="px-6 py-4">Order ID & Date</th>
@@ -104,14 +119,24 @@ export default function AdminOrdersPage() {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">Loading orders...</td>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    Loading orders...
+                  </td>
                 </tr>
-              ) : orders.length === 0 ? (
+              ) : filteredOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center">No orders found.</td>
+                  <td colSpan={5} className="px-6 py-12 text-center">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 text-gray-400">
+                      <Package size={24} />
+                    </div>
+                    <p className="text-gray-500 font-medium">
+                      {searchTerm ? 'No orders match your search.' : 'No orders found.'}
+                    </p>
+                  </td>
                 </tr>
               ) : (
-                orders.map((order) => (
+                filteredOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="text-sm font-mono font-bold text-blue-600 mb-1">
