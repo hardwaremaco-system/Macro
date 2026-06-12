@@ -16,6 +16,7 @@ const ShopByCategory = dynamic(() => import('../../components/shop/ShopByCategor
 const LatestProducts = dynamic(() => import('../../components/shop/LatestProducts'));
 const NewsEventsPreview = dynamic(() => import('../../components/shop/NewsEventsPreview'));
 const Testimonials = dynamic(() => import('../../components/shop/Testimonials'));
+const BuildAndInvestBanner = dynamic(() => import('../../components/shop/BuildAndInvestBanner'));
 
 export default function HomePage() {
   return (
@@ -23,30 +24,34 @@ export default function HomePage() {
 
       {/* 1. HERO SECTION (Loads instantly) */}
       <HeroSection />
-{/* 4. SHOP BY CATEGORY */}
+
+      {/* 2. SHOP BY CATEGORY */}
       <div className="bg-white border-y border-gray-200">
         <ShopByCategory />
       </div>
 
-      
       {/* 3. FEATURED PRODUCTS */}
       {/* (Will show the 5 animated wave skeletons while Firestore fetches data) */}
       <FeaturedProducts />
 
-      {/* 2. TRUSTED BRANDS SCROLLER */}
+      {/* 4. BUILD & INVEST BANNER (New Service Promotion) */}
+      <div className="bg-white border-b border-gray-200">
+        <BuildAndInvestBanner />
+      </div>
+
+      {/* 5. TRUSTED BRANDS SCROLLER */}
       <TrustedBrands />
 
-
-      {/* 5. LATEST ADDED PRODUCTS */}
+      {/* 6. LATEST ADDED PRODUCTS */}
       {/* (Will also show the 5 animated wave skeletons independently) */}
       <LatestProducts />
 
-      {/* 6. NEWS & EVENTS */}
+      {/* 7. NEWS & EVENTS */}
       <div className="py-8 bg-gray-50">
         <NewsEventsPreview />
       </div>
 
-      {/* 7. TESTIMONIALS */}
+      {/* 8. TESTIMONIALS */}
       <Testimonials />
 
     </div>
