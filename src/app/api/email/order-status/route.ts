@@ -11,7 +11,7 @@ export async function POST(request: Request) {
     const { orderId, status, email, name } = data;
 
     const payload = {
-      sender: { name: "Macro Hardware", email: "sales@macrohardware.com" },
+      sender: { name: "Macro Hardware", email: "hardwaremaco@gmail.com" },
       to: [{ email, name }],
       subject: `Order Update - #${orderId.slice(0, 8)}`,
       htmlContent: `
