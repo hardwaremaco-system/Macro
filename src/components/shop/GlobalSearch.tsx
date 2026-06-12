@@ -41,27 +41,41 @@ function CustomSearchBox({ setIsFocused }: { setIsFocused: (val: boolean) => voi
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full flex relative z-50">
-      <input
-        type="text"
-        value={inputValue}
-        onChange={handleChange}
-        onFocus={() => setIsFocused(true)}
-        placeholder="Search cement, iron sheets, paint etc..."
-        className="w-full border border-gray-300 border-r-0 rounded-l-sm px-4 py-3 text-sm sm:text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
-      />
-      {inputValue && (
-        <button type="button" onClick={handleClear} className="absolute right-[85px] sm:right-[115px] top-3 sm:top-3.5 text-gray-400 hover:text-gray-600 p-0.5">
-          <X size={18} />
-        </button>
-      )}
+    <form onSubmit={handleSubmit} className="w-full flex z-50 shadow-sm rounded-full">
+      {/* Input Wrapper ensures the X button is always perfectly positioned */}
+      <div className="relative flex-1">
+        <input
+          type="text"
+          value={inputValue}
+          onChange={handleChange}
+          onFocus={() => setIsFocused(true)}
+          placeholder="Search cement, iron sheets, paint etc..."
+          // Oval edges (rounded-l-full) and reduced mobile height (py-2)
+          className="w-full border border-gray-300 border-r-0 rounded-l-full pl-5 pr-10 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
+        />
+        {inputValue && (
+          <button 
+            type="button" 
+            onClick={handleClear} 
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+          >
+            <X size={16} />
+          </button>
+        )}
+      </div>
+
       <button 
         type="submit" 
-        className="bg-slate-900 text-white px-5 sm:px-8 rounded-r-sm font-bold text-sm flex items-center justify-center hover:bg-slate-800 transition-colors uppercase tracking-widest shrink-0"
+        // Oval edges (rounded-r-full) and Amber text
+        className="bg-slate-900 text-amber-500 px-6 sm:px-8 rounded-r-full font-bold text-sm flex items-center justify-center hover:bg-slate-800 transition-colors uppercase tracking-widest shrink-0"
       >
-        <Search size={18} className="mr-2 hidden sm:block" />
-        <Search size={18} className="sm:hidden" />
-        <span className="hidden sm:inline">Search</span>
+        {/* Search Icon: Hidden on desktop, pulsing on mobile when typing */}
+        <Search size={18} className={`sm:hidden ${inputValue ? 'animate-pulse' : ''}`} />
+        
+        {/* Search Text: Visible on desktop, pulsing when typing */}
+        <span className={`hidden sm:inline ${inputValue ? 'animate-pulse' : ''}`}>
+          Search
+        </span>
       </button>
     </form>
   );
@@ -73,14 +87,14 @@ function CustomHits({ setIsFocused }: { setIsFocused: (val: boolean) => void }) 
 
   if (hits.length === 0) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 p-6 text-center text-sm text-gray-500 z-50 shadow-lg">
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 p-6 text-center text-sm text-gray-500 z-50 shadow-lg rounded-xl">
         No products found matching your search.
       </div>
     );
   }
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-1 bg-white shadow-2xl border border-gray-200 overflow-hidden z-50 max-h-96 overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-2xl border border-gray-200 rounded-xl overflow-hidden z-50 max-h-96 overflow-y-auto">
       <ul className="divide-y divide-gray-100">
         {hits.map((hit: any) => (
           <li key={hit.objectID}>
@@ -89,7 +103,7 @@ function CustomHits({ setIsFocused }: { setIsFocused: (val: boolean) => void }) 
               onClick={() => setIsFocused(false)}
               className="flex items-center p-3 hover:bg-gray-50 transition-colors group"
             >
-              <div className="w-12 h-12 bg-gray-50 flex items-center justify-center mr-4 border border-gray-100 flex-shrink-0 overflow-hidden">
+              <div className="w-12 h-12 bg-gray-50 flex items-center justify-center mr-4 border border-gray-100 flex-shrink-0 overflow-hidden rounded-md">
                 {hit.image ? (
                   <img src={hit.image} alt={hit.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                 ) : (
