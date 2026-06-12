@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 // Strict relative paths
 import { useCartStore } from '../../../store/useCartStore';
@@ -164,8 +165,11 @@ export default function CheckoutPage() {
               {loading ? 'Processing Order...' : 'Confirm Order'}
             </button>
             <p className="text-xs text-gray-500 text-center mt-3">
-              By confirming your order, you agree to our Terms and Conditions.
-            </p>
+  By confirming your order, you agree to our{' '}
+  <Link href="/terms" className="underline hover:text-gray-800 transition-colors">
+    Terms and Conditions
+  </Link>.
+</p>
           </div>
         </div>
       </form>
