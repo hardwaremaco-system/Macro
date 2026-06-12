@@ -26,11 +26,11 @@ export default function HeroSection() {
         </p>
 
         <div className="hidden sm:flex flex-row gap-4 w-auto">
-          <Link href="/categories" className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center">
+          <Link href="/products" className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-colors shadow-lg flex items-center justify-center">
             Shop Materials <ArrowRight size={20} className="ml-2" />
           </Link>
-          <Link href="/promotions" className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-colors flex items-center justify-center">
-            View Special Offers
+          <Link href="/news" className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-black text-lg hover:bg-white/20 transition-colors flex items-center justify-center">
+            Read The News
           </Link>
         </div>
       </div>
