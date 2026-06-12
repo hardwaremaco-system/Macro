@@ -1,15 +1,18 @@
 // src/app/(shop)/contact/page.tsx
 'use client';
+
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, AlertCircle } from 'lucide-react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
   const [status, setStatus] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setStatus('sending');
+    setErrorMessage(''); // Reset error message
     
     try {
       const response = await fetch('/api/email/contact', {
@@ -18,8 +21,11 @@ export default function ContactPage() {
         body: JSON.stringify(formData),
       });
 
+      const data = await response.json();
+
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        // This will grab the exact reason it failed from the server
+        throw new Error(data.error || 'Failed to connect to server (Check if file is in /api/email/contact/route.ts)');
       }
 
       setStatus('success');
@@ -28,9 +34,10 @@ export default function ContactPage() {
       // Clear the success message after 5 seconds
       setTimeout(() => setStatus(''), 5000);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error sending message:', error);
       setStatus('error');
+      setErrorMessage(error.message); // Save the error message
     }
   };
 
@@ -99,9 +106,13 @@ export default function ContactPage() {
 
             {/* Error Message */}
             {status === 'error' && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 border border-red-200 font-bold flex items-center">
-                <AlertCircle size={20} className="mr-2" /> 
-                Failed to send message. Please try again or call us directly.
+              <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 border border-red-200 flex flex-col items-start text-sm">
+                <div className="font-bold flex items-center mb-1">
+                  <AlertCircle size={18} className="mr-2" /> 
+                  Failed to send message
+                </div>
+                {/* THIS PRINTS THE EXACT REASON IT BROKE */}
+                <span className="font-mono text-xs opacity-80 break-all">{errorMessage}</span>
               </div>
             )}
 
