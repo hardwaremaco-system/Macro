@@ -2,15 +2,14 @@
 import React from 'react';
 import dynamic from 'next/dynamic';
 
-// 1. INSTANT IMPORT (Above the fold)
-// We keep the Hero Section as a standard import so it loads instantly 
-// the millisecond the user visits the site. This is crucial for a fast-feeling website.
+// 1. INSTANT IMPORTS (Above the fold)
+// Both the Hero Section and Trusted Brands are visible immediately, 
+// so we load them instantly to prevent any layout shift or visual popping.
 import HeroSection from '../../components/shop/HeroSection';
+import TrustedBrands from '../../components/shop/TrustedBrands';
 
 // 2. DYNAMIC IMPORTS (Below the fold)
 // Next.js will code-split these and load them in the background.
-// They won't block the initial page load anymore!
-const TrustedBrands = dynamic(() => import('../../components/shop/TrustedBrands'));
 const FeaturedProducts = dynamic(() => import('../../components/shop/FeaturedProducts'));
 const ShopByCategory = dynamic(() => import('../../components/shop/ShopByCategory'));
 const LatestProducts = dynamic(() => import('../../components/shop/LatestProducts'));
@@ -24,7 +23,7 @@ export default function HomePage() {
       {/* 1. HERO SECTION (Loads instantly) */}
       <HeroSection />
 
-      {/* 2. TRUSTED BRANDS SCROLLER */}
+      {/* 2. TRUSTED BRANDS SCROLLER (Now loads instantly alongside the Hero) */}
       <TrustedBrands />
 
       {/* 3. FEATURED PRODUCTS */}
