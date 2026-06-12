@@ -41,48 +41,46 @@ function CustomSearchBox({ setIsFocused }: { setIsFocused: (val: boolean) => voi
     if (searchTerm) {
       setIsFocused(false);
       
-      // Background Task: Save the search query to Firestore analytics
-      // We do not 'await' this so the user is routed instantly without delay
       addDoc(collection(db, 'search_queries'), {
         query: searchTerm.toLowerCase(),
         createdAt: serverTimestamp(),
       }).catch((error) => console.error('Error saving search query:', error));
 
-      // Route to the dedicated full-page search results grid
       router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
     }
   };
 
   return (
-    // Outer pill container with padding
+    // Massively reduced outer padding to p-0.5 and fixed a max height to keep it very slim
     <form 
       onSubmit={handleSubmit} 
-      className="w-full flex items-center bg-white border border-gray-300 rounded-full p-1 sm:p-1.5 z-50 shadow-sm relative transition-colors focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900"
+      className="w-full flex items-center bg-white border border-gray-300 rounded-full p-0.5 z-50 shadow-sm relative transition-colors focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900 h-9 sm:h-10"
     >
-      <div className="relative flex-1 flex items-center">
+      <div className="relative flex-1 flex items-center h-full">
         <input
           type="text"
           value={inputValue}
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
           placeholder="Search cement, iron sheets, paint etc..."
-          className="w-full bg-transparent pl-4 pr-10 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none"
+          // Removed all vertical padding (py), strictly relying on the container's fixed height
+          className="w-full h-full bg-transparent pl-4 pr-8 text-xs sm:text-sm focus:outline-none"
         />
         {inputValue && (
           <button 
             type="button" 
             onClick={handleClear} 
-            className="absolute right-2 text-gray-400 hover:text-gray-600 p-1"
+            className="absolute right-2 text-gray-400 hover:text-gray-600 p-0.5"
           >
-            <X size={16} />
+            <X size={14} />
           </button>
         )}
       </div>
 
-      {/* Inner nested pill button */}
+      {/* Button sizing completely tightened */}
       <button 
         type="submit" 
-        className="bg-slate-900 text-amber-500 h-full px-6 sm:px-8 py-2 sm:py-2.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-slate-800 transition-colors uppercase tracking-widest shrink-0"
+        className="bg-slate-900 text-amber-500 h-full px-5 sm:px-6 rounded-full font-bold text-xs flex items-center justify-center hover:bg-slate-800 transition-colors uppercase tracking-widest shrink-0"
       >
         Search
       </button>
@@ -96,36 +94,36 @@ function CustomHits({ setIsFocused }: { setIsFocused: (val: boolean) => void }) 
 
   if (hits.length === 0) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 p-6 text-center text-sm text-gray-500 z-50 shadow-lg rounded-2xl">
+      <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 p-4 text-center text-xs text-gray-500 z-50 shadow-lg rounded-xl">
         No products found matching your search.
       </div>
     );
   }
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-2xl border border-gray-200 rounded-2xl overflow-hidden z-50 max-h-96 overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 mt-1 bg-white shadow-2xl border border-gray-200 rounded-xl overflow-hidden z-50 max-h-80 overflow-y-auto">
       <ul className="divide-y divide-gray-100">
         {hits.map((hit: any) => (
           <li key={hit.objectID}>
             <Link
               href={`/product/${hit.objectID}`}
               onClick={() => setIsFocused(false)}
-              className="flex items-center p-3 hover:bg-gray-50 transition-colors group"
+              className="flex items-center p-2 sm:p-3 hover:bg-gray-50 transition-colors group"
             >
-              <div className="w-12 h-12 bg-gray-50 flex items-center justify-center mr-4 border border-gray-100 flex-shrink-0 overflow-hidden rounded-md">
+              <div className="w-10 h-10 bg-gray-50 flex items-center justify-center mr-3 border border-gray-100 flex-shrink-0 overflow-hidden rounded-md">
                 {hit.image ? (
                   <img src={hit.image} alt={hit.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
                 ) : (
-                  <span className="text-[10px] text-gray-400">No Image</span>
+                  <span className="text-[9px] text-gray-400">No Image</span>
                 )}
               </div>
 
               <div className="flex-1 min-w-0">
-                <h4 className="text-sm font-bold text-slate-900 truncate">{hit.title}</h4>
-                <p className="text-xs text-gray-500 mt-0.5">{hit.unit || '1 Unit'}</p>
+                <h4 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{hit.title}</h4>
+                <p className="text-[10px] text-gray-500 mt-0.5">{hit.unit || '1 Unit'}</p>
               </div>
 
-              <div className="text-sm font-black text-slate-900 flex-shrink-0 ml-3">
+              <div className="text-xs sm:text-sm font-black text-slate-900 flex-shrink-0 ml-3">
                 UGX {hit.price?.toLocaleString()}
               </div>
             </Link>
