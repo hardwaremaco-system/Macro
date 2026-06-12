@@ -13,7 +13,6 @@ export default function Header() {
   const [isDepartmentsOpen, setIsDepartmentsOpen] = useState(false);
 
   const cartCount = useCartStore((state) => state.getCartCount());
-  // Extracted profile to check the role field shown in your Firestore screenshot
   const { user, profile } = useAuth(); 
 
   useEffect(() => {
@@ -32,7 +31,7 @@ export default function Header() {
         {/* --- TIER 1: Main Header (Logo, Search, Links) --- */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="h-16 md:h-20 flex items-center justify-between">
-            
+
             {/* Left: Logo + Text */}
             <div className="flex items-center">
               <Link href="/" className="flex items-center" onClick={closeMenu}>
@@ -84,7 +83,7 @@ export default function Header() {
         {/* --- TIER 2: Desktop Navigation Bar (Categories Dropdown + Links) --- */}
         <div className="hidden md:block bg-slate-900 border-t border-slate-800">
           <div className="max-w-7xl mx-auto px-6 lg:px-8 h-12 flex items-center justify-between">
-            
+
             <div className="flex items-center gap-8 h-full">
               {/* "All Departments" Click Dropdown */}
               <div className="relative h-full flex items-center">
@@ -127,28 +126,28 @@ export default function Header() {
               {/* Inline Navigation Links */}
               <nav className="flex items-center gap-8 text-sm font-bold text-gray-200 uppercase tracking-wider">
                 <Link href="/" className="hover:text-white transition-colors">Home</Link>
+                <Link href="/build-and-invest" className="hover:text-white transition-colors">Build & Invest</Link>
                 <Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link>
                 <Link href="/news" className="hover:text-white transition-colors">News & Events</Link>
                 <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
-                
+
                 {/* Admin Link Check */}
                 {profile?.role === 'admin' && (
-                  <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition-colors">Admin Panel</Link>
+                  <Link href="/admin" className="hover:text-white transition-colors">Admin Panel</Link>
                 )}
               </nav>
             </div>
 
             {/* Right side support link */}
-            <Link href="/contact" className="text-sm font-bold text-amber-400 hover:text-amber-300 transition-colors uppercase tracking-wider">
+            <Link href="/contact" className="text-sm font-bold text-gray-200 hover:text-white transition-colors uppercase tracking-wider">
               Support
             </Link>
-            
+
           </div>
         </div>
       </header>
 
       {/* Spacer to prevent content from hiding behind the fixed header */}
-      {/* Mobile: ~120px height | Desktop: 80px (main) + 48px (nav) = 128px */}
       <div className="h-[120px] md:h-[128px] w-full shrink-0"></div>
 
       {/* --- MOBILE DRAWER OVERLAY --- */}
@@ -184,6 +183,9 @@ export default function Header() {
           <Link href="/" onClick={closeMenu} className="py-4 text-sm font-black text-gray-900 border-b border-gray-50 hover:text-blue-600 transition-colors uppercase tracking-wider">
             Home
           </Link>
+          <Link href="/build-and-invest" onClick={closeMenu} className="py-4 text-sm font-black text-gray-900 border-b border-gray-50 hover:text-blue-600 transition-colors uppercase tracking-wider">
+            Build & Invest
+          </Link>
           <Link href="/categories" onClick={closeMenu} className="py-4 text-sm font-black text-gray-900 border-b border-gray-50 hover:text-blue-600 transition-colors uppercase tracking-wider">
             All Categories
           </Link>
@@ -199,10 +201,10 @@ export default function Header() {
           <Link href="/contact" onClick={closeMenu} className="py-4 text-sm font-black text-gray-900 border-b border-gray-50 hover:text-blue-600 transition-colors uppercase tracking-wider">
             Contact Us
           </Link>
-          
+
           {/* Mobile Admin Link Check */}
           {profile?.role === 'admin' && (
-            <Link href="/admin" onClick={closeMenu} className="py-4 text-sm font-black text-amber-600 border-b border-gray-50 hover:text-amber-500 transition-colors uppercase tracking-wider">
+            <Link href="/admin" onClick={closeMenu} className="py-4 text-sm font-black text-gray-900 border-b border-gray-50 hover:text-blue-600 transition-colors uppercase tracking-wider">
               Admin Panel
             </Link>
           )}
