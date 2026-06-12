@@ -35,7 +35,7 @@ const HOMEPAGE_CATEGORIES = [
     bgColor: 'bg-[#F2C5D6]', // Matches the light pink
   },
   { 
-    name: 'Hardware', 
+    name: 'Materials and Paint', 
     slug: 'hardware', 
     image: '/categories/hardware.png', 
     bgColor: 'bg-[#FAF7C8]', // Matches the pale yellow
