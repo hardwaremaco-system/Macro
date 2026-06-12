@@ -30,9 +30,10 @@ export default function ContactPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
         {/* Contact Information */}
         <div className="lg:col-span-1 space-y-8">
-          <div className="bg-blue-900 text-white p-8 rounded-2xl shadow-lg">
+          {/* Edge-to-edge on mobile using -mx-4 and rounded-none, snaps back to normal on sm screens */}
+          <div className="bg-blue-900 text-white p-8 rounded-none sm:rounded-2xl shadow-lg -mx-4 sm:mx-0">
             <h3 className="text-xl font-black mb-6 border-b border-blue-800 pb-4">Store Details</h3>
-            
+
             <div className="space-y-6">
               <div className="flex items-start">
                 <MapPin className="text-amber-500 mr-4 mt-1 flex-shrink-0" />
@@ -73,10 +74,11 @@ export default function ContactPage() {
         <div className="lg:col-span-2">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <h3 className="text-2xl font-black text-gray-900 mb-6">Send us a Message</h3>
-            
+
+            {/* Removed the emoji from the success message */}
             {status === 'success' && (
               <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-6 border border-green-200 font-bold flex items-center">
-                ✅ Message sent successfully! We will get back to you soon.
+                Message sent successfully! We will get back to you soon.
               </div>
             )}
 
