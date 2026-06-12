@@ -49,7 +49,7 @@ export default function ShopByCategory() {
       {/* Header with Heading on Left and "View All" Link on Right */}
       <div className="flex justify-between items-end mb-8 border-b border-gray-100 pb-2">
         <h2 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">
-          Shop by Category
+          Buy by Category
         </h2>
         <Link 
           href="/categories" 
