@@ -4,13 +4,14 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { collection, getDocs, doc, deleteDoc, updateDoc, query, orderBy } from 'firebase/firestore';
-import { Plus, Edit, Trash2, Star, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, Star, Image as ImageIcon, Search } from 'lucide-react';
 // Strict relative paths
 import { db } from '../../../../lib/firebase/client';
 
 export default function AdminProductsList() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState(''); // Added search state
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -47,24 +48,48 @@ export default function AdminProductsList() {
     }
   };
 
+  // Filter products based on search input (checks title and category)
+  const filteredProducts = products.filter(product => 
+    (product.title?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+    (product.category?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="flex flex-col h-full relative">
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Inventory Management</h1>
           <p className="text-sm text-gray-500 mt-1">Manage pricing, stock, and featured items.</p>
         </div>
-        <Link 
-          href="/admin/products/upload" 
-          className="bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm transition-colors"
-        >
-          <Plus size={18} className="mr-2" /> Add New Product
-        </Link>
+        
+        {/* Search Bar & Add Button Container */}
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <div className="relative w-full sm:w-auto">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search size={16} className="text-gray-400" />
+            </div>
+            <input 
+              type="text" 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search products..." 
+              className="pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 w-full sm:w-64"
+            />
+          </div>
+          <Link 
+            href="/admin/products/upload" 
+            className="w-full sm:w-auto bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center justify-center shadow-sm transition-colors whitespace-nowrap"
+          >
+            <Plus size={18} className="mr-2" /> Add New Product
+          </Link>
+        </div>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 flex flex-col">
+        {/* MOBILE RESPONSIVE WRAPPER APPLIED HERE */}
+        <div className="overflow-x-auto w-full rounded-xl">
+          {/* MIN-WIDTH APPLIED HERE */}
+          <table className="w-full min-w-[800px] text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <th className="px-6 py-4">Product</th>
@@ -77,10 +102,14 @@ export default function AdminProductsList() {
             <tbody className="divide-y divide-gray-200">
               {loading ? (
                 <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">Loading inventory...</td></tr>
-              ) : products.length === 0 ? (
-                <tr><td colSpan={5} className="px-6 py-12 text-center text-gray-500">No products found. Start by adding one!</td></tr>
+              ) : filteredProducts.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                    {searchTerm ? 'No products match your search.' : 'No products found. Start by adding one!'}
+                  </td>
+                </tr>
               ) : (
-                products.map((product) => (
+                filteredProducts.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-6 py-4 flex items-center">
                       <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center mr-4 overflow-hidden shrink-0">
@@ -91,16 +120,16 @@ export default function AdminProductsList() {
                         )}
                       </div>
                       <div>
-                        <div className="text-sm font-bold text-gray-900">{product.title}</div>
+                        <div className="text-sm font-bold text-gray-900 line-clamp-1">{product.title}</div>
                         <div className="text-xs text-gray-500 max-w-[200px] truncate">{product.description || 'No description'}</div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-bold">
+                      <span className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md text-xs font-bold whitespace-nowrap">
                         {product.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm font-bold text-gray-900">
+                    <td className="px-6 py-4 text-sm font-bold text-gray-900 whitespace-nowrap">
                       {Number(product.price).toLocaleString()}
                     </td>
                     <td className="px-6 py-4 text-center">
