@@ -84,25 +84,50 @@ export default function OrderDetailsPage() {
   return (
     <>
       {/* 
-        GLOBAL PRINT STYLES 
-        1. Hides the app's global header and footer
-        2. Forces exactly 100% scale (no zooming)
-        3. Sets standard A4 margins
-        4. Preserves exact colors
+        BULLETPROOF PRINT STYLES 
+        - Hides everything else on the page natively
+        - Forces receipt to top-left to avoid blank gaps
+        - Kills Next.js min-heights (fixes the blank page 2)
       */}
       <style dangerouslySetInnerHTML={{
         __html: `
           @media print {
-            header, footer, nav { display: none !important; }
-            body { 
-              background-color: white !important; 
+            /* Hide absolutely everything in the body by default */
+            body * {
+              visibility: hidden;
+            }
+            
+            /* Make ONLY the receipt and its children visible */
+            .print-receipt-container, .print-receipt-container * {
+              visibility: visible;
+            }
+            
+            /* Break the receipt out of the layout and pin it to the top */
+            .print-receipt-container {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 100vw !important;
+              max-width: 100% !important;
+              margin: 0 !important;
+              padding: 15mm !important; /* Natural printable margins */
+              box-sizing: border-box !important;
+            }
+
+            /* Remove browser-generated margins to prevent zooming/scaling */
+            @page {
+              size: portrait;
+              margin: 0mm; 
+            }
+
+            /* Strip out Next.js Layout minimum heights that cause Page 2 */
+            html, body {
+              height: auto !important;
+              min-height: 0 !important;
+              background-color: white !important;
               -webkit-print-color-adjust: exact !important; 
               print-color-adjust: exact !important; 
             }
-            @page { margin: 15mm; size: auto; }
-            html, body { width: 100% !important; height: auto !important; margin: 0 !important; padding: 0 !important; }
-            /* This ensures the receipt container takes up the full print page without squeezing */
-            .print-receipt-container { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
           }
         `
       }} />
