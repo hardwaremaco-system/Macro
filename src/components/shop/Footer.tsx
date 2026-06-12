@@ -22,7 +22,7 @@ export default function Footer() {
                 className="h-8 md:h-10 object-contain mr-3" 
               />
               <span className="text-xl font-black tracking-tight whitespace-nowrap">
-                <span className="text-blue-600">MACRO</span> <span className="text-amber-500">HARDWARE</span>
+                <span className="text-blue-600 font-black">MACRO</span> <span className="text-amber-500 font-black">HARDWARE</span>
               </span>
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed mb-6">
@@ -47,6 +47,7 @@ export default function Footer() {
             <h3 className="text-gray-900 font-black mb-4 uppercase tracking-wider text-sm">Quick Links</h3>
             <ul className="space-y-3 text-sm">
               <li><Link href="/" className="hover:text-blue-600 transition-colors">Home</Link></li>
+              <li><Link href="/build-and-invest" className="hover:text-blue-600 transition-colors">Build & Invest</Link></li>
               <li><Link href="/profile" className="hover:text-blue-600 transition-colors">My Account</Link></li>
               <li><Link href="/gallery" className="hover:text-blue-600 transition-colors">Project Gallery</Link></li>
               <li><Link href="/news" className="hover:text-blue-600 transition-colors">News & Events</Link></li>
@@ -74,11 +75,12 @@ export default function Footer() {
 
         </div>
 
-        {/* Footer Bottom: Uniform spacing for mobile and desktop */}
+        {/* Footer Bottom */}
         <div className="border-t border-gray-200 pt-6 flex flex-col md:flex-row items-center justify-between text-xs text-gray-500 font-medium text-center md:text-left gap-4">
-          <p className="tracking-wide">&copy; {currentYear} Macro Hardware. All rights reserved.</p>
+          <p className="tracking-wide">
+            &copy; {currentYear} <strong className="font-black text-gray-900">Macro Hardware</strong>. All rights reserved.
+          </p>
 
-          {/* Badges - Now visible on all devices, wraps cleanly on small screens */}
           <div className="flex flex-wrap justify-center gap-x-4 gap-y-2">
             <span>Secure Payments</span>
             <span className="hidden sm:inline text-gray-300">•</span>
