@@ -15,7 +15,8 @@ import {
   LogOut, 
   FileText,
   ShieldCheck,
-  MessageSquare
+  MessageSquare,
+  Search // Added the Search icon here
 } from 'lucide-react';
 // Strict relative path
 import { useAuth } from '../../context/AuthContext';
@@ -27,6 +28,7 @@ const adminLinks = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Customers', href: '/admin/customers', icon: Users },
+  { name: 'Search Analytics', href: '/admin/search-analytics', icon: Search }, // Injected the new page here
   { name: 'Trusted Brands', href: '/admin/brands', icon: ShieldCheck },
   { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
   { name: 'News & Events', href: '/admin/news', icon: FileText },
