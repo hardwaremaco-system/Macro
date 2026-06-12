@@ -12,12 +12,12 @@ import { auth, db } from '../../../lib/firebase/client';
 
 export default function RegisterPage() {
   const router = useRouter();
-  
+
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  
+
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState('');
@@ -53,10 +53,21 @@ export default function RegisterPage() {
         createdAt: serverTimestamp(),
       });
 
-      // 3. Show Success Toast
+      // 3. Trigger Welcome Email silently in the background
+      try {
+        await fetch('/api/email/welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: fullName, email: email }),
+        });
+      } catch (emailErr) {
+        console.error('Welcome email failed, but account was created:', emailErr);
+      }
+
+      // 4. Show Success Toast
       setToast('Account created successfully!');
-      
-      // 4. Redirect after a short delay
+
+      // 5. Redirect after a short delay
       setTimeout(() => {
         router.push('/');
       }, 1500);
@@ -74,7 +85,7 @@ export default function RegisterPage() {
 
   return (
     <div className="max-w-md mx-auto px-4 py-16 sm:py-24 relative">
-      
+
       {/* Success Toast Notification */}
       {toast && (
         <div className="fixed top-24 right-4 sm:right-8 z-50 flex items-center bg-green-600 text-white px-5 py-3 rounded-lg shadow-2xl animate-pulse">
