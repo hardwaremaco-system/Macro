@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { Plus, Trash2, FileText, X, UploadCloud, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { Plus, Trash2, FileText, X, UploadCloud, CheckCircle, XCircle, Calendar, AlertCircle } from 'lucide-react';
 import { CldUploadWidget } from 'next-cloudinary';
 // Strict relative path
 import { db } from '../../../../lib/firebase/client';
@@ -13,13 +13,14 @@ export default function AdminNewsPage() {
   const [loading, setLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   const initialForm = {
     title: '',
     excerpt: '',
     content: '',
-    type: 'News', // 'News' or 'Event'
-    eventDate: '', // Optional date for events
+    type: 'News', 
+    eventDate: '', 
     image: '',
     isActive: true,
   };
@@ -51,16 +52,18 @@ export default function AdminNewsPage() {
 
   const handleAddNews = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.image) return alert('Please upload a cover image.');
+    setErrorMsg('');
+    if (!formData.image) return setErrorMsg('Please upload a cover image.');
     setIsSubmitting(true);
 
     try {
-      // Create a URL-friendly slug
-      const slug = formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      // PRO UPGRADE: Append a random 4-digit string to the slug to guarantee uniqueness!
+      const baseSlug = formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      const uniqueSlug = `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
 
       await addDoc(collection(db, 'news'), {
         ...formData,
-        slug,
+        slug: uniqueSlug,
         createdAt: serverTimestamp(),
       });
       setIsModalOpen(false);
@@ -68,7 +71,7 @@ export default function AdminNewsPage() {
       fetchNews();
     } catch (error) {
       console.error('Error adding news article:', error);
-      alert('Failed to publish article.');
+      setErrorMsg('Failed to publish article. Check connection.');
     } finally {
       setIsSubmitting(false);
     }
@@ -84,7 +87,7 @@ export default function AdminNewsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this article?')) return;
+    if (!confirm('Are you sure you want to delete this article completely?')) return;
     try {
       await deleteDoc(doc(db, 'news', id));
       setNews(news.filter(n => n.id !== id));
@@ -100,7 +103,7 @@ export default function AdminNewsPage() {
           <h1 className="text-2xl font-black text-gray-900">News & Events</h1>
           <p className="text-sm text-gray-500 mt-1">Publish store updates, tips, and upcoming events.</p>
         </div>
-        <button onClick={() => setIsModalOpen(true)} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm">
+        <button onClick={() => { setIsModalOpen(true); setErrorMsg(''); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm transition-colors">
           <Plus size={18} className="mr-2" /> Publish Article
         </button>
       </div>
@@ -158,8 +161,8 @@ export default function AdminNewsPage() {
                     </button>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => handleDelete(item.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded">
-                      <Trash2 size={16} />
+                    <button onClick={() => handleDelete(item.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors title='Delete Article'">
+                      <Trash2 size={18} />
                     </button>
                   </td>
                 </tr>
@@ -171,23 +174,30 @@ export default function AdminNewsPage() {
 
       {/* Create News/Event Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
               <h2 className="text-lg font-black text-gray-900">Publish News or Event</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900"><X size={24} /></button>
+              <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors bg-white p-1 rounded-full border border-gray-200"><X size={20} /></button>
             </div>
-            
+
             <form onSubmit={handleAddNews} className="p-6 overflow-y-auto">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
+              
+              {errorMsg && (
+                <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm font-bold flex items-center border border-red-100">
+                  <AlertCircle size={16} className="mr-2" /> {errorMsg}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+
                 {/* Image Upload Area */}
                 <div className="md:col-span-2 mb-2">
-                  <label className="block text-sm font-bold text-gray-700 mb-2">Cover Image</label>
+                  <label className="block text-sm font-bold text-gray-700 mb-2">Cover Image *</label>
                   {formData.image ? (
-                    <div className="relative w-full h-40 rounded-xl overflow-hidden border-2 border-blue-500 shadow-sm">
+                    <div className="relative w-full h-48 rounded-xl overflow-hidden border-2 border-blue-500 shadow-sm group">
                       <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                      <button type="button" onClick={() => setFormData({ ...formData, image: '' })} className="absolute top-2 right-2 bg-red-500 text-white p-1 rounded-full hover:bg-red-600">
+                      <button type="button" onClick={() => setFormData({ ...formData, image: '' })} className="absolute top-3 right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                         <X size={16}/>
                       </button>
                     </div>
@@ -197,9 +207,10 @@ export default function AdminNewsPage() {
                       onSuccess={(result: any) => setFormData({ ...formData, image: result.info.secure_url })}
                     >
                       {({ open }) => (
-                        <button type="button" onClick={() => open()} className="w-full h-40 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600">
-                          <UploadCloud size={32} className="mb-2" />
-                          <span className="text-sm font-bold">Upload Cover Image</span>
+                        <button type="button" onClick={() => open()} className="w-full h-48 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors bg-gray-50">
+                          <UploadCloud size={32} className="mb-3" />
+                          <span className="text-sm font-bold">Click to Upload Image</span>
+                          <span className="text-xs font-medium text-gray-400 mt-1">Recommended size: 1200x600px</span>
                         </button>
                       )}
                     </CldUploadWidget>
@@ -207,45 +218,47 @@ export default function AdminNewsPage() {
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Title</label>
-                  <input name="title" required value={formData.title} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="e.g. New Shipment of Roofing Irons Arrived!" />
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Article Title *</label>
+                  <input name="title" required value={formData.title} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. New Shipment of Roofing Irons Arrived!" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Post Type</label>
-                  <select name="type" required value={formData.type} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm">
+                  <select name="type" required value={formData.type} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white">
                     <option value="News">News / Update</option>
                     <option value="Event">Store Event</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Event Date (If applicable)</label>
-                  <input type="date" name="eventDate" value={formData.eventDate} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" disabled={formData.type !== 'Event'} />
-                </div>
-                
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Excerpt (Short description for homepage)</label>
-                  <textarea name="excerpt" rows={2} required value={formData.excerpt} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="A brief summary..." />
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Event Date</label>
+                  <input type="date" name="eventDate" value={formData.eventDate} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-100 disabled:text-gray-400" disabled={formData.type !== 'Event'} />
                 </div>
 
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-bold text-gray-700 mb-1">Full Content</label>
-                  <textarea name="content" rows={5} required value={formData.content} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm" placeholder="Write the full article details here..." />
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Excerpt * <span className="font-normal text-gray-400 text-xs ml-1">(Short summary for the homepage)</span></label>
+                  <textarea name="excerpt" rows={2} required value={formData.excerpt} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="A brief summary of the announcement..." />
                 </div>
 
-                <div className="md:col-span-2 flex items-center p-4 border border-gray-200 rounded-lg bg-gray-50 mt-2">
-                  <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
-                  <label className="ml-3 block text-sm font-bold text-gray-900">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-bold text-gray-700 mb-1">Full Content * <span className="font-normal text-gray-400 text-xs ml-1">(Line breaks will be preserved on the site)</span></label>
+                  <textarea name="content" rows={6} required value={formData.content} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Write the full article details here..." />
+                </div>
+
+                <div className="md:col-span-2 flex items-center p-4 border border-blue-100 rounded-xl bg-blue-50 mt-2">
+                  <input type="checkbox" name="isActive" checked={formData.isActive} onChange={handleChange} className="w-5 h-5 text-blue-600 rounded border-gray-300 focus:ring-blue-500" />
+                  <label className="ml-3 block text-sm font-black text-blue-900">
                     Publish immediately to the live site
                   </label>
                 </div>
               </div>
 
-              <div className="mt-8 flex justify-end gap-3 border-t border-gray-200 pt-4">
-                <button type="button" onClick={() => setIsModalOpen(false)} className="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">Cancel</button>
-                <button type="submit" disabled={isSubmitting} className="px-5 py-2.5 text-sm font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-                  {isSubmitting ? 'Saving...' : 'Save & Publish'}
+              <div className="mt-8 flex justify-end gap-3 border-t border-gray-200 pt-5">
+                <button type="button" onClick={() => setIsModalOpen(false)} className="px-6 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">Cancel</button>
+                <button type="submit" disabled={isSubmitting} className="px-8 py-2.5 text-sm font-black text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 flex items-center">
+                  {isSubmitting ? (
+                    <><div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div> Saving...</>
+                  ) : 'Save & Publish'}
                 </button>
               </div>
             </form>
