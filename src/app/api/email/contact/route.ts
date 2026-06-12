@@ -7,19 +7,17 @@ export async function POST(request: Request) {
     const apiKey = process.env.BREVO_API_KEY;
 
     if (!apiKey) {
-      console.warn("BREVO_API_KEY missing. Skipping email.");
-      return NextResponse.json({ success: false, error: 'No API Key' }, { status: 500 });
+      return NextResponse.json({ success: false, error: 'BREVO_API_KEY is missing' }, { status: 500 });
     }
 
     const { name, email, subject, message } = data;
-
-    // IMPORTANT: Must be your verified Brevo sender email
-    const senderEmail = "hardwaremaco@gmail.com"; 
+    const senderEmail = "hardwaremaco@gmail.com"; // Your verified sender
 
     const adminPayload = {
       sender: { name: "Store System", email: senderEmail },
-      to: [{ email: "samwelampeire@gmail.com", name: "Admin" }], // Your admin email
-      replyTo: { email: email, name: name }, // Allows you to hit "Reply" and email the customer directly!
+      to: [{ email: "samwelampeire@gmail.com", name: "Admin" }],
+      // If the email typed in the form is invalid, Brevo will reject this whole block:
+      replyTo: { email: email.trim(), name: name.trim() }, 
       subject: `New Contact Message: ${subject}`,
       htmlContent: `
         <div style="font-family: sans-serif; background-color: #f9fafb; padding: 20px; color: #374151;">
@@ -47,13 +45,12 @@ export async function POST(request: Request) {
 
     if (!res.ok) {
       const errorData = await res.json();
-      console.error("Brevo Contact Error:", errorData);
-      throw new Error('Failed to send email via Brevo');
+      // Send the EXACT Brevo error back to the frontend
+      return NextResponse.json({ success: false, error: JSON.stringify(errorData) }, { status: 400 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error('Contact API critical error:', error);
-    return NextResponse.json({ error: 'Failed to send message' }, { status: 500 });
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
   }
 }
