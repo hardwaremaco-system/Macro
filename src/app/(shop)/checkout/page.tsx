@@ -3,8 +3,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+// Added writeBatch, getDoc, doc, and increment for strict inventory control
+import { collection, serverTimestamp, writeBatch, doc, getDoc, increment } from 'firebase/firestore';
 // Strict relative paths
 import { useCartStore } from '../../../store/useCartStore';
 import { useAuth } from '../../../context/AuthContext';
@@ -16,7 +16,6 @@ export default function CheckoutPage() {
   const { user, profile } = useAuth();
 
   const [loading, setLoading] = useState(false);
-  // Flag to prevent the useEffect from kicking us to the cart page after checkout
   const [isOrderPlaced, setIsOrderPlaced] = useState(false); 
 
   const [formData, setFormData] = useState({
@@ -29,7 +28,6 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    // Only redirect to cart if the cart is empty AND they haven't just placed an order
     if (items.length === 0 && !isOrderPlaced) {
       router.push('/cart');
     }
@@ -44,7 +42,26 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      // 1. Build the order object
+      // 1. INVENTORY CHECK: Verify we actually have enough stock before taking the order
+      for (const item of items) {
+        const productRef = doc(db, 'products', item.id);
+        const productSnap = await getDoc(productRef);
+        
+        if (productSnap.exists()) {
+          const currentStock = productSnap.data().stock || 0;
+          if (currentStock < item.quantity) {
+            alert(`Sorry! We only have ${currentStock} left in stock for "${item.name}". Please adjust your cart.`);
+            setLoading(false);
+            return; // Completely halts the checkout process
+          }
+        }
+      }
+
+      // 2. Initialize a secure Batch Write
+      const batch = writeBatch(db);
+
+      // 3. Prepare the new Order Document
+      const newOrderRef = doc(collection(db, 'orders')); // Auto-generates the ID
       const orderData = {
         userId: user ? user.uid : 'guest',
         customerDetails: {
@@ -62,29 +79,41 @@ export default function CheckoutPage() {
         status: 'Pending',
         createdAt: serverTimestamp(),
       };
+      
+      // Add order creation to the batch
+      batch.set(newOrderRef, orderData);
 
-      // 2. Save to Firestore 'orders' collection
-      const docRef = await addDoc(collection(db, 'orders'), orderData);
+      // 4. Prepare Stock Deductions for the Batch
+      items.forEach((item) => {
+        const productRef = doc(db, 'products', item.id);
+        // increment(-quantity) securely subtracts the exact amount ordered from the database
+        batch.update(productRef, {
+          stock: increment(-item.quantity)
+        });
+      });
 
-      // 3. Trigger Brevo Emails via our new API
+      // 5. COMMIT BATCH: Executes order creation AND stock deduction simultaneously
+      await batch.commit();
+
+      // 6. Trigger Brevo Emails via our secure API
       try {
         await fetch('/api/email/order-confirmation', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ...orderData, orderId: docRef.id }),
+          body: JSON.stringify({ ...orderData, orderId: newOrderRef.id }),
         });
       } catch (emailError) {
         console.error('Email sending failed, but order was placed:', emailError);
       }
 
-      // 4. Set flag, Clear cart & Redirect safely
+      // 7. Set flag, Clear cart & Redirect securely
       setIsOrderPlaced(true);
       clearCart();
       router.push('/checkout/success');
       
     } catch (error) {
       console.error('Error placing order:', error);
-      alert('There was an issue placing your order. Please try again.');
+      alert('There was a secure system error placing your order. Please try again.');
       setLoading(false);
     }
   };
@@ -164,12 +193,14 @@ export default function CheckoutPage() {
             <button type="submit" disabled={loading} className="w-full bg-blue-600 text-white py-3.5 rounded-lg font-black hover:bg-blue-700 transition-colors flex items-center justify-center shadow-md disabled:opacity-50">
               {loading ? 'Processing Order...' : 'Confirm Order'}
             </button>
+            
+            {/* Kept your Terms link update here! */}
             <p className="text-xs text-gray-500 text-center mt-3">
-  By confirming your order, you agree to our{' '}
-  <Link href="/terms" className="underline hover:text-gray-800 transition-colors">
-    Terms and Conditions
-  </Link>.
-</p>
+              By confirming your order, you agree to our{' '}
+              <a href="/terms" className="underline hover:text-gray-800 transition-colors">
+                Terms and Conditions
+              </a>.
+            </p>
           </div>
         </div>
       </form>
