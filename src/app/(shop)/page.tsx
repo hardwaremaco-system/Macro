@@ -1,48 +1,52 @@
 // src/app/(shop)/page.tsx
 import React from 'react';
+import dynamic from 'next/dynamic';
 
-// Strict relative imports for all our dynamic components
+// 1. INSTANT IMPORT (Above the fold)
+// We keep the Hero Section as a standard import so it loads instantly 
+// the millisecond the user visits the site. This is crucial for a fast-feeling website.
 import HeroSection from '../../components/shop/HeroSection';
-import LatestProducts from '../../components/shop/LatestProducts';
-import ShopByCategory from '../../components/shop/ShopByCategory';
-import FeaturedProducts from '../../components/shop/FeaturedProducts';
-import NewsEventsPreview from '../../components/shop/NewsEventsPreview';
-import TrustedBrands from '../../components/shop/TrustedBrands';
-import Testimonials from '../../components/shop/Testimonials';
+
+// 2. DYNAMIC IMPORTS (Below the fold)
+// Next.js will code-split these and load them in the background.
+// They won't block the initial page load anymore!
+const TrustedBrands = dynamic(() => import('../../components/shop/TrustedBrands'));
+const FeaturedProducts = dynamic(() => import('../../components/shop/FeaturedProducts'));
+const ShopByCategory = dynamic(() => import('../../components/shop/ShopByCategory'));
+const LatestProducts = dynamic(() => import('../../components/shop/LatestProducts'));
+const NewsEventsPreview = dynamic(() => import('../../components/shop/NewsEventsPreview'));
+const Testimonials = dynamic(() => import('../../components/shop/Testimonials'));
 
 export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
-      
-      {/* 1. HERO SECTION */}
+
+      {/* 1. HERO SECTION (Loads instantly) */}
       <HeroSection />
-{/* 7. TRUSTED BRANDS SCROLLER */}
+
+      {/* 2. TRUSTED BRANDS SCROLLER */}
       <TrustedBrands />
 
-{/* 4. FEATURED PRODUCTS (Controlled by Admin Panel) */}
+      {/* 3. FEATURED PRODUCTS */}
+      {/* (Will show the 5 animated wave skeletons while Firestore fetches data) */}
       <FeaturedProducts />
 
-{/* 4. SHOP BY CATEGORY (2x3 Grid with Transparent Photos) */}
+      {/* 4. SHOP BY CATEGORY */}
       <div className="bg-white border-y border-gray-200">
         <ShopByCategory />
       </div>
 
-
-      {/* 3. LATEST ADDED PRODUCTS */}
+      {/* 5. LATEST ADDED PRODUCTS */}
+      {/* (Will also show the 5 animated wave skeletons independently) */}
       <LatestProducts />
 
-      
-
-      {/* 5. NEWS & EVENTS */}
+      {/* 6. NEWS & EVENTS */}
       <div className="py-8 bg-gray-50">
         <NewsEventsPreview />
       </div>
 
-      {/* 6. TESTIMONIALS */}
+      {/* 7. TESTIMONIALS */}
       <Testimonials />
-
-      
-      
 
     </div>
   );
