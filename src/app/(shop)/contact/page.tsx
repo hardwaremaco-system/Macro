@@ -1,6 +1,5 @@
 // src/app/(shop)/contact/page.tsx
 'use client';
-
 import React, { useState } from 'react';
 import { MapPin, Phone, Mail, Clock, Send, AlertCircle } from 'lucide-react';
 
