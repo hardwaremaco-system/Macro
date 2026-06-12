@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const { orderId, customerDetails, totalAmount } = data;
     
     // IMPORTANT: The email here MUST be verified in your Brevo Dashboard!
-    const senderEmail = "sales@macrohardware.com"; // Change this if needed
+    const senderEmail = "hardwaremaco@gmail.com"; // Change this if needed
     const senderName = "Macro Hardware";
 
     // 1. Email to Customer
@@ -32,7 +32,7 @@ export async function POST(request: Request) {
     // 2. Notification to Admin
     const adminPayload = {
       sender: { name: "Store System", email: senderEmail },
-      to: [{ email: "admin@macrohardware.com", name: "Admin" }], // Where you want to receive notifications
+      to: [{ email: "samwelampeire@gmail.com", name: "Admin" }], // Where you want to receive notifications
       subject: `🚨 NEW ORDER RECEIVED - #${orderId.slice(0, 8)}`,
       htmlContent: `
         <h2>New Order Received!</h2>
