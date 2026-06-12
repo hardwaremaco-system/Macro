@@ -5,9 +5,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { InstantSearch, useSearchBox, useHits } from 'react-instantsearch';
-import { Search, X } from 'lucide-react';
-// Strict relative path
+import { X } from 'lucide-react';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
+// Strict relative paths
 import { searchClient } from '../../lib/algolia';
+import { db } from '../../lib/firebase/client';
 
 // 1. Custom Search Input Field
 function CustomSearchBox({ setIsFocused }: { setIsFocused: (val: boolean) => void }) {
@@ -33,49 +36,55 @@ function CustomSearchBox({ setIsFocused }: { setIsFocused: (val: boolean) => voi
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputValue.trim()) {
+    const searchTerm = inputValue.trim();
+    
+    if (searchTerm) {
       setIsFocused(false);
+      
+      // Background Task: Save the search query to Firestore analytics
+      // We do not 'await' this so the user is routed instantly without delay
+      addDoc(collection(db, 'search_queries'), {
+        query: searchTerm.toLowerCase(),
+        createdAt: serverTimestamp(),
+      }).catch((error) => console.error('Error saving search query:', error));
+
       // Route to the dedicated full-page search results grid
-      router.push(`/search?q=${encodeURIComponent(inputValue.trim())}`);
+      router.push(`/search?q=${encodeURIComponent(searchTerm)}`);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="w-full flex z-50 shadow-sm rounded-full">
-      {/* Input Wrapper ensures the X button is always perfectly positioned */}
-      <div className="relative flex-1">
+    // Outer pill container with padding
+    <form 
+      onSubmit={handleSubmit} 
+      className="w-full flex items-center bg-white border border-gray-300 rounded-full p-1 sm:p-1.5 z-50 shadow-sm relative transition-colors focus-within:border-slate-900 focus-within:ring-1 focus-within:ring-slate-900"
+    >
+      <div className="relative flex-1 flex items-center">
         <input
           type="text"
           value={inputValue}
           onChange={handleChange}
           onFocus={() => setIsFocused(true)}
           placeholder="Search cement, iron sheets, paint etc..."
-          // Oval edges (rounded-l-full) and reduced mobile height (py-2)
-          className="w-full border border-gray-300 border-r-0 rounded-l-full pl-5 pr-10 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
+          className="w-full bg-transparent pl-4 pr-10 py-1.5 sm:py-2 text-sm sm:text-base focus:outline-none"
         />
         {inputValue && (
           <button 
             type="button" 
             onClick={handleClear} 
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1"
+            className="absolute right-2 text-gray-400 hover:text-gray-600 p-1"
           >
             <X size={16} />
           </button>
         )}
       </div>
 
+      {/* Inner nested pill button */}
       <button 
         type="submit" 
-        // Oval edges (rounded-r-full) and Amber text
-        className="bg-slate-900 text-amber-500 px-6 sm:px-8 rounded-r-full font-bold text-sm flex items-center justify-center hover:bg-slate-800 transition-colors uppercase tracking-widest shrink-0"
+        className="bg-slate-900 text-amber-500 h-full px-6 sm:px-8 py-2 sm:py-2.5 rounded-full font-bold text-sm flex items-center justify-center hover:bg-slate-800 transition-colors uppercase tracking-widest shrink-0"
       >
-        {/* Search Icon: Hidden on desktop, pulsing on mobile when typing */}
-        <Search size={18} className={`sm:hidden ${inputValue ? 'animate-pulse' : ''}`} />
-        
-        {/* Search Text: Visible on desktop, pulsing when typing */}
-        <span className={`hidden sm:inline ${inputValue ? 'animate-pulse' : ''}`}>
-          Search
-        </span>
+        Search
       </button>
     </form>
   );
@@ -87,14 +96,14 @@ function CustomHits({ setIsFocused }: { setIsFocused: (val: boolean) => void }) 
 
   if (hits.length === 0) {
     return (
-      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 p-6 text-center text-sm text-gray-500 z-50 shadow-lg rounded-xl">
+      <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 p-6 text-center text-sm text-gray-500 z-50 shadow-lg rounded-2xl">
         No products found matching your search.
       </div>
     );
   }
 
   return (
-    <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-2xl border border-gray-200 rounded-xl overflow-hidden z-50 max-h-96 overflow-y-auto">
+    <div className="absolute top-full left-0 right-0 mt-2 bg-white shadow-2xl border border-gray-200 rounded-2xl overflow-hidden z-50 max-h-96 overflow-y-auto">
       <ul className="divide-y divide-gray-100">
         {hits.map((hit: any) => (
           <li key={hit.objectID}>
