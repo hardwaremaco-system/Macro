@@ -21,6 +21,7 @@ import {
   ChevronRight,
   X
 } from 'lucide-react';
+
 // Strict relative path
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../lib/firebase/client';
@@ -176,7 +177,7 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
-      {/* 🔥 THE FIX IS HERE: min-w-0 prevents flexbox from exploding past the screen width */}
+      {/* min-w-0 prevents flexbox from exploding past the screen width */}
       <main 
         className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ease-in-out min-w-0
           ${isDesktopExpanded ? 'md:ml-64' : 'md:ml-20'}
