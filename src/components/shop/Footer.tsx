@@ -21,7 +21,9 @@ export default function Footer() {
                 alt="Logo" 
                 className="h-8 md:h-10 object-contain mr-3" 
               />
-                                <span className="text-blue-600">MACRO</span> <span className="text-amber-500">HARDWARE</span>
+              <span className="text-xl font-black tracking-tight whitespace-nowrap">
+                <span className="text-blue-600">MACRO</span> <span className="text-amber-500">HARDWARE</span>
+              </span>
             </Link>
             <p className="text-sm text-gray-600 leading-relaxed mb-6">
               Your trusted partner for premium building materials, construction supplies, and hardware in the Western Region.
