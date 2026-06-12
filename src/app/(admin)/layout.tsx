@@ -21,6 +21,7 @@ import {
   ChevronRight,
   X
 } from 'lucide-react';
+
 // Strict relative path
 import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../lib/firebase/client';
@@ -80,7 +81,7 @@ export default function AdminLayout({
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-100 overflow-hidden">
+    <div className="min-h-screen flex bg-gray-100">
 
       {/* Mobile Drawer Overlay */}
       {isMobileOpen && (
@@ -176,13 +177,14 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
+      {/* min-w-0 prevents flexbox from exploding past the screen width */}
       <main 
-        className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ease-in-out
+        className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ease-in-out min-w-0
           ${isDesktopExpanded ? 'md:ml-64' : 'md:ml-20'}
         `}
       >
         {/* Top Navbar */}
-        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 shadow-sm sticky top-0 z-10">
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 shadow-sm sticky top-0 z-10 shrink-0">
           
           {/* Mobile Hamburger Button */}
           <div className="flex items-center">
@@ -207,7 +209,7 @@ export default function AdminLayout({
         </header>
 
         {/* Page Content Injection */}
-        <div className="p-4 sm:p-8 flex-grow w-full max-w-full overflow-x-hidden">
+        <div className="p-4 sm:p-8 flex-grow">
           {children}
         </div>
       </main>
