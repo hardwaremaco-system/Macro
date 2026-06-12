@@ -22,7 +22,7 @@ export default function HeroSection() {
         </h1>
         
         <p className="text-lg sm:text-xl text-gray-300 mb-2 sm:mb-10 max-w-2xl leading-relaxed">
-          Premium cement, roofing, plumbing, and construction materials. Order online and pick at the store with ease.
+          Premium paint, cement, roofing, plumbing, and construction materials. Order online and pick at the store with ease.
         </p>
 
         <div className="hidden sm:flex flex-row gap-4 w-auto">
