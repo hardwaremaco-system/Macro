@@ -1,251 +1,236 @@
-// src/app/(admin)/admin/page.tsx
+// src/app/(admin)/layout.tsx
 'use client';
 
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { collection, getDocs, query, where, orderBy, limit } from 'firebase/firestore';
-import { TrendingUp, Package, ShoppingCart, Users, AlertCircle, CheckCircle } from 'lucide-react';
+import { useRouter, usePathname } from 'next/navigation';
+import { 
+  LayoutDashboard, 
+  Package, 
+  ShoppingCart, 
+  Users, 
+  Image as ImageIcon, 
+  Settings, 
+  LogOut, 
+  FileText,
+  ShieldCheck,
+  MessageSquare,
+  Search,
+  Menu,
+  ChevronLeft,
+  ChevronRight,
+  X
+} from 'lucide-react';
 // Strict relative path
-import { db } from '../../../lib/firebase/client';
+import { useAuth } from '../../context/AuthContext';
+import { auth } from '../../lib/firebase/client';
+import { signOut } from 'firebase/auth';
 
-export default function AdminOverviewPage() {
-  const [loading, setLoading] = useState(true);
+const adminLinks = [
+  { name: 'Overview', href: '/admin', icon: LayoutDashboard },
+  { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
+  { name: 'Products', href: '/admin/products', icon: Package },
+  { name: 'Customers', href: '/admin/customers', icon: Users },
+  { name: 'Search Analytics', href: '/admin/search-analytics', icon: Search },
+  { name: 'Trusted Brands', href: '/admin/brands', icon: ShieldCheck },
+  { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
+  { name: 'News & Events', href: '/admin/news', icon: FileText },
+  { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },
+  { name: 'Settings', href: '/admin/settings', icon: Settings },
+];
 
-  // Real Data States
-  const [revenue, setRevenue] = useState(0);
-  const [totalOrders, setTotalOrders] = useState(0);
-  const [totalCustomers, setTotalCustomers] = useState(0);
-  const [totalProducts, setTotalProducts] = useState(0);
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { user, isAdmin, isEditor, loading } = useAuth();
 
-  const [recentOrders, setRecentOrders] = useState<any[]>([]);
-  const [pendingOrdersCount, setPendingOrdersCount] = useState(0);
-  const [pendingTestimonialsCount, setPendingTestimonialsCount] = useState(0);
+  // Responsive UI States
+  const [isDesktopExpanded, setIsDesktopExpanded] = useState(true);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
+  // Route Protection Strategy
   useEffect(() => {
-    async function fetchDashboardData() {
-      try {
-        // 1. Fetch Orders (For Revenue, Total Count, and Alerts)
-        const ordersSnap = await getDocs(collection(db, 'orders'));
-        let calculatedRevenue = 0;
-        let pendingOrders = 0;
-        const allOrders: any[] = [];
-
-        ordersSnap.forEach((doc) => {
-          const data = doc.data();
-          allOrders.push({ id: doc.id, ...data });
-
-          // Add to revenue (handle both total and totalAmount naming conventions)
-          calculatedRevenue += Number(data.totalAmount || data.total || 0);
-
-          // Check for pending status
-          if (data.status === 'pending' || data.status === 'Processing' || !data.status) {
-            pendingOrders++;
-          }
-        });
-
-        setRevenue(calculatedRevenue);
-        setTotalOrders(allOrders.length);
-        setPendingOrdersCount(pendingOrders);
-
-        // Sort orders by date in memory to get the 5 most recent
-        const sortedOrders = allOrders.sort((a, b) => {
-          const dateA = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
-          const dateB = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
-          return dateB - dateA;
-        }).slice(0, 5);
-        setRecentOrders(sortedOrders);
-
-        // 2. Fetch Total Customers (Accurate Calculation)
-        // Fetch everyone, then count only the ones who are NOT admins. 
-        // This catches users even if they don't have a specific 'role' field attached to them.
-        const usersSnap = await getDocs(collection(db, 'users'));
-        let customerCount = 0;
-        usersSnap.forEach((doc) => {
-          if (doc.data().role !== 'admin') {
-            customerCount++;
-          }
-        });
-        setTotalCustomers(customerCount);
-
-        // 3. Fetch Total Products
-        const productsSnap = await getDocs(collection(db, 'products'));
-        setTotalProducts(productsSnap.size);
-
-        // 4. Fetch Pending Testimonials (for Alerts)
-        const testimonialsSnap = await getDocs(query(collection(db, 'testimonials'), where('status', '==', 'pending')));
-        setPendingTestimonialsCount(testimonialsSnap.size);
-
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      } finally {
-        setLoading(false);
+    if (!loading) {
+      if (!user || (!isAdmin && !isEditor)) {
+        router.push('/');
       }
     }
+  }, [user, isAdmin, isEditor, loading, router]);
 
-    fetchDashboardData();
-  }, []);
+  // Auto-close mobile menu when a navigation link is clicked
+  useEffect(() => {
+    setIsMobileOpen(false);
+  }, [pathname]);
 
-  // Dynamic Stats Array based on live data
-  const stats = [
-    { 
-      name: 'Total Revenue', 
-      value: `UGX ${revenue.toLocaleString()}`, 
-      subtitle: 'Lifetime sales', 
-      icon: TrendingUp, color: 'text-green-600', bg: 'bg-green-50' 
-    },
-    { 
-      name: 'Total Orders', 
-      value: totalOrders.toLocaleString(), 
-      subtitle: 'All time', 
-      icon: ShoppingCart, color: 'text-blue-600', bg: 'bg-blue-50' 
-    },
-    { 
-      name: 'Total Customers', 
-      value: totalCustomers.toLocaleString(), 
-      subtitle: 'Registered accounts', 
-      icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' 
-    },
-    { 
-      name: 'Active Products', 
-      value: totalProducts.toLocaleString(), 
-      subtitle: 'Live in inventory', 
-      icon: Package, color: 'text-amber-600', bg: 'bg-amber-50' 
-    },
-  ];
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/login');
+  };
 
-  if (loading) {
+  if (loading || !user || (!isAdmin && !isEditor)) {
     return (
-      <div className="h-full flex items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-900"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-900"></div>
       </div>
     );
   }
 
   return (
-    <div>
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-gray-900">Dashboard Overview</h1>
-        <p className="text-sm text-gray-500 mt-1">Welcome back. Here is your live data for Macro Hardware today.</p>
-      </div>
+    <div className="min-h-screen flex bg-gray-100">
 
-      {/* KPI Statistic Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {stats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div key={stat.name} className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm flex items-start justify-between hover:shadow-md transition-shadow">
-              <div>
-                <p className="text-sm font-bold text-gray-500 mb-1">{stat.name}</p>
-                <h3 className="text-2xl font-black text-gray-900">{stat.value}</h3>
-                <p className="text-xs font-medium text-gray-400 mt-2">
-                  {stat.subtitle}
-                </p>
-              </div>
-              <div className={`w-12 h-12 rounded-lg flex items-center justify-center ${stat.bg} ${stat.color}`}>
-                <Icon size={24} />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Mobile Drawer Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm z-20 md:hidden"
+          onClick={() => setIsMobileOpen(false)}
+        />
+      )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        {/* Recent Orders Table */}
-        <div className="lg:col-span-2 bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col">
-          <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-            <h2 className="text-lg font-black text-gray-900">Recent Orders</h2>
-            <Link href="/admin/orders" className="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
-              View All
-            </Link>
+      {/* Sidebar Navigation */}
+      <aside 
+        className={`fixed top-0 left-0 h-full bg-blue-900 text-white z-30 transition-all duration-300 ease-in-out flex flex-col border-r border-blue-950 shadow-xl md:shadow-none
+          ${isMobileOpen ? 'translate-x-0 w-64' : '-translate-x-full md:translate-x-0'} 
+          ${isDesktopExpanded ? 'md:w-64' : 'md:w-20'}
+        `}
+      >
+        {/* Sidebar Header */}
+        <div className="h-16 flex items-center justify-between px-5 bg-blue-950 border-b border-blue-800 shrink-0">
+          <div className="flex items-center overflow-hidden whitespace-nowrap">
+            {/* Desktop Collapsed View (M A) */}
+            <span className={`text-xl font-black tracking-tight transition-opacity ${!isDesktopExpanded && !isMobileOpen ? 'md:block hidden' : 'hidden'}`}>
+              M<span className="text-amber-500">A</span>
+            </span>
+            
+            {/* Expanded View (MACRO ADMIN) */}
+            <span className={`text-xl font-black tracking-tight transition-opacity ${isDesktopExpanded || isMobileOpen ? 'block' : 'hidden md:hidden'}`}>
+              MACRO <span className="text-amber-500">ADMIN</span>
+            </span>
           </div>
-          <div className="overflow-x-auto flex-1">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-white border-b border-gray-100 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  <th className="px-6 py-4">Order ID</th>
-                  <th className="px-6 py-4">Customer</th>
-                  <th className="px-6 py-4">Amount</th>
-                  <th className="px-6 py-4 text-right">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {recentOrders.length === 0 ? (
-                  <tr>
-                    <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                      No orders have been placed yet.
-                    </td>
-                  </tr>
-                ) : (
-                  recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                        #{order.id.slice(0, 8).toUpperCase()}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-600">
-                        {order.customerName || order.email || 'Guest User'}
-                      </td>
-                      <td className="px-6 py-4 text-sm font-bold text-gray-900">
-                        UGX {Number(order.totalAmount || order.total || 0).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
-                          order.status === 'completed' || order.status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                          order.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                          'bg-amber-100 text-amber-800'
-                        }`}>
-                          {order.status || 'Pending'}
-                        </span>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
+
+          {/* Mobile Close Button */}
+          <button onClick={() => setIsMobileOpen(false)} className="md:hidden text-blue-300 hover:text-white p-1">
+            <X size={24} />
+          </button>
         </div>
 
-        {/* Action Alerts Sidebar */}
-        <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex flex-col">
-          <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50">
-            <h2 className="text-lg font-black text-gray-900">Action Required</h2>
+        {/* Navigation Links */}
+        <div className="flex-1 overflow-y-auto py-4 overflow-x-hidden custom-scrollbar">
+          <div className={`text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 px-5 ${!isDesktopExpanded && !isMobileOpen ? 'text-center px-0' : ''}`}>
+             {(!isDesktopExpanded && !isMobileOpen) ? '...' : 'Management'}
           </div>
-          <div className="p-6 flex-1">
-            {pendingOrdersCount === 0 && pendingTestimonialsCount === 0 ? (
-               <div className="h-full flex flex-col items-center justify-center text-center text-gray-400 py-8">
-                 <CheckCircle size={40} className="text-green-500 mb-3 opacity-50" />
-                 <p className="font-medium text-sm">You are all caught up!</p>
-                 <p className="text-xs mt-1">No pending actions required.</p>
-               </div>
+          
+          <nav className="space-y-1.5 px-3">
+            {adminLinks.map((link) => {
+              const Icon = link.icon;
+              const isActive = pathname === link.href;
+              return (
+                <Link 
+                  key={link.name} 
+                  href={link.href}
+                  title={!isDesktopExpanded ? link.name : ''} // Shows native tooltip on hover when collapsed
+                  className={`flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-colors group ${
+                    isActive ? 'bg-blue-800 text-white shadow-sm' : 'text-blue-200 hover:bg-blue-800 hover:text-white'
+                  }`}
+                >
+                  <Icon size={20} className={`flex-shrink-0 ${!isDesktopExpanded && !isMobileOpen ? 'mx-auto' : 'mr-3'}`} />
+                  <span className={`whitespace-nowrap transition-opacity ${!isDesktopExpanded && !isMobileOpen ? 'hidden' : 'block'}`}>
+                    {link.name}
+                  </span>
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+
+        {/* Sidebar Footer (Exit & Toggle) */}
+        <div className="p-3 border-t border-blue-800 bg-blue-950 shrink-0 space-y-2">
+          
+          {/* Desktop Toggle Button */}
+          <button 
+            onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
+            className="hidden md:flex items-center w-full px-3 py-2 text-xs font-bold text-blue-300 hover:text-white hover:bg-blue-900 rounded-lg transition-colors"
+          >
+            {isDesktopExpanded ? (
+              <><ChevronLeft size={18} className="mr-3 shrink-0" /> Collapse Menu</>
             ) : (
-              <ul className="space-y-5">
-                {pendingOrdersCount > 0 && (
-                  <li className="flex gap-4 p-4 rounded-xl bg-amber-50 border border-amber-100">
-                    <div className="w-2 h-2 rounded-full bg-amber-500 mt-2 flex-shrink-0"></div>
-                    <div>
-                      <p className="text-sm font-black text-amber-900">{pendingOrdersCount} Pending {pendingOrdersCount === 1 ? 'Order' : 'Orders'}</p>
-                      <p className="text-xs text-amber-700 mt-1">You have orders waiting for dispatch or payment confirmation.</p>
-                      <Link href="/admin/orders" className="text-xs font-bold text-amber-600 hover:text-amber-800 mt-2 inline-block uppercase tracking-wider">Review Orders &rarr;</Link>
-                    </div>
-                  </li>
-                )}
-
-                {pendingTestimonialsCount > 0 && (
-                  <li className="flex gap-4 p-4 rounded-xl bg-blue-50 border border-blue-100">
-                    <div className="w-2 h-2 rounded-full bg-blue-500 mt-2 flex-shrink-0"></div>
-                    <div>
-                      <p className="text-sm font-black text-blue-900">{pendingTestimonialsCount} New {pendingTestimonialsCount === 1 ? 'Review' : 'Reviews'}</p>
-                      <p className="text-xs text-blue-700 mt-1">Customers have submitted testimonials that require moderation.</p>
-                      <Link href="/admin/testimonials" className="text-xs font-bold text-blue-600 hover:text-blue-800 mt-2 inline-block uppercase tracking-wider">Review Feedback &rarr;</Link>
-                    </div>
-                  </li>
-                )}
-              </ul>
+              <ChevronRight size={18} className="mx-auto shrink-0" />
             )}
-          </div>
-        </div>
+          </button>
 
-      </div>
+          {/* Logout Button */}
+          <button 
+            onClick={handleLogout}
+            title={!isDesktopExpanded ? 'Exit Dashboard' : ''}
+            className={`flex items-center w-full px-3 py-2.5 text-sm font-bold text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors ${!isDesktopExpanded && !isMobileOpen ? 'justify-center' : ''}`}
+          >
+            <LogOut size={20} className={`shrink-0 ${!isDesktopExpanded && !isMobileOpen ? '' : 'mr-3'}`} /> 
+            <span className={`whitespace-nowrap ${!isDesktopExpanded && !isMobileOpen ? 'hidden' : 'block'}`}>
+              Exit Dashboard
+            </span>
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content Area */}
+      {/* 🔥 THE FIX IS HERE: min-w-0 prevents flexbox from exploding past the screen width */}
+      <main 
+        className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ease-in-out min-w-0
+          ${isDesktopExpanded ? 'md:ml-64' : 'md:ml-20'}
+        `}
+      >
+        {/* Top Navbar */}
+        <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 shadow-sm sticky top-0 z-10 shrink-0">
+          
+          {/* Mobile Hamburger Button */}
+          <div className="flex items-center">
+            <button 
+              onClick={() => setIsMobileOpen(true)} 
+              className="md:hidden p-2 -ml-2 mr-2 text-gray-600 hover:bg-gray-100 hover:text-blue-600 rounded-lg transition-colors"
+            >
+              <Menu size={24} />
+            </button>
+          </div>
+
+          {/* Admin User Profile Tag */}
+          <div className="flex items-center gap-3">
+            <div className="text-right hidden sm:block">
+              <div className="text-sm font-black text-gray-900 leading-none">Admin Portal</div>
+              <div className="text-xs font-bold text-gray-500 mt-1">{user.email}</div>
+            </div>
+            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-black border border-blue-200">
+              {user.email?.charAt(0).toUpperCase() || 'A'}
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content Injection */}
+        <div className="p-4 sm:p-8 flex-grow">
+          {children}
+        </div>
+      </main>
+
+      {/* Global Style to slim down the custom scrollbar in the sidebar */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+          }
+          .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+          }
+          .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+          }
+          .custom-scrollbar:hover::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+          }
+        `
+      }} />
     </div>
   );
 }
