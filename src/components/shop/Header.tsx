@@ -13,7 +13,8 @@ export default function Header() {
   const [isDepartmentsOpen, setIsDepartmentsOpen] = useState(false);
 
   const cartCount = useCartStore((state) => state.getCartCount());
-  const { user } = useAuth();
+  // Extracted profile to check the role field shown in your Firestore screenshot
+  const { user, profile } = useAuth(); 
 
   useEffect(() => {
     if (isMobileMenuOpen) {
@@ -129,6 +130,11 @@ export default function Header() {
                 <Link href="/gallery" className="hover:text-white transition-colors">Gallery</Link>
                 <Link href="/news" className="hover:text-white transition-colors">News & Events</Link>
                 <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
+                
+                {/* Admin Link Check */}
+                {profile?.role === 'admin' && (
+                  <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition-colors">Admin Panel</Link>
+                )}
               </nav>
             </div>
 
@@ -193,6 +199,13 @@ export default function Header() {
           <Link href="/contact" onClick={closeMenu} className="py-4 text-sm font-black text-gray-900 border-b border-gray-50 hover:text-blue-600 transition-colors uppercase tracking-wider">
             Contact Us
           </Link>
+          
+          {/* Mobile Admin Link Check */}
+          {profile?.role === 'admin' && (
+            <Link href="/admin" onClick={closeMenu} className="py-4 text-sm font-black text-amber-600 border-b border-gray-50 hover:text-amber-500 transition-colors uppercase tracking-wider">
+              Admin Panel
+            </Link>
+          )}
         </nav>
 
         <div className="p-6 border-t border-gray-100 bg-gray-50 shrink-0">
