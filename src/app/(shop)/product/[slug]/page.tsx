@@ -1,8 +1,6 @@
 // src/app/(shop)/product/[slug]/page.tsx
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import React from 'react';
+import { Metadata } from 'next';
 import Link from 'next/link';
 import { doc, getDoc } from 'firebase/firestore';
 import { ArrowLeft } from 'lucide-react';
@@ -14,46 +12,48 @@ import ProductBuyBox from '../../../../components/shop/ProductBuyBox';
 import ProductDescription from '../../../../components/shop/ProductDescription';
 import RelatedProducts from '../../../../components/shop/RelatedProducts';
 
-export default function ProductDetailsPage() {
-  const params = useParams();
-  const router = useRouter();
-  const documentId = params.slug as string;
+// 1. GENERATE OPEN GRAPH METADATA (For WhatsApp, Facebook, SEO)
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const docRef = doc(db, 'products', params.slug);
+  const snapshot = await getDoc(docRef);
 
-  const [product, setProduct] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchProduct() {
-      try {
-        const docRef = doc(db, 'products', documentId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          setProduct({ id: docSnap.id, ...docSnap.data() });
-        } else {
-          setProduct(null);
-        }
-      } catch (error) {
-        console.error('Error fetching product details:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (documentId) {
-      fetchProduct();
-    }
-  }, [documentId]);
-
-  if (loading) {
-    return (
-      <div className="min-h-[60vh] flex justify-center items-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-      </div>
-    );
+  if (!snapshot.exists()) {
+    return { title: 'Product Not Found | Macro Hardware' };
   }
 
-  if (!product) {
+  const product = snapshot.data();
+
+  return {
+    title: `${product.title} | Macro Hardware`,
+    description: product.description?.substring(0, 160) || `Buy ${product.title} at the best price.`,
+    openGraph: {
+      title: product.title,
+      description: `UGX ${Number(product.price).toLocaleString()} - ${product.unit || '1 Unit'}`,
+      // Add your actual production domain here once you go live
+      // url: `https://yourwebsite.com/product/${params.slug}`, 
+      siteName: 'Macro Hardware',
+      images: [
+        {
+          url: product.image, // The image WhatsApp will display
+          width: 800,
+          height: 800,
+          alt: product.title,
+        },
+      ],
+      type: 'website',
+    },
+  };
+}
+
+// 2. MAIN SERVER COMPONENT PAGE
+export default async function ProductDetailsPage({ params }: { params: { slug: string } }) {
+  const documentId = params.slug;
+
+  // Fetch data directly on the server! No more useEffect or loading spinners.
+  const docRef = doc(db, 'products', documentId);
+  const docSnap = await getDoc(docRef);
+
+  if (!docSnap.exists()) {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center text-center px-4">
         <h1 className="text-2xl font-black text-gray-900 mb-2">Product Not Found</h1>
@@ -65,13 +65,21 @@ export default function ProductDetailsPage() {
     );
   }
 
+  const product = { id: docSnap.id, ...docSnap.data() } as any;
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumb Navigation */}
+      
+      {/* Breadcrumb Navigation 
+          (Changed from router.back() to a direct Link so this remains a fast Server Component) 
+      */}
       <div className="mb-6">
-        <button onClick={() => router.back()} className="text-sm font-bold text-gray-500 hover:text-blue-600 flex items-center transition-colors">
-          <ArrowLeft size={16} className="mr-1" /> Back
-        </button>
+        <Link 
+          href="/products" 
+          className="text-sm font-bold text-gray-500 hover:text-blue-600 flex items-center transition-colors inline-flex"
+        >
+          <ArrowLeft size={16} className="mr-1" /> Back to Shop
+        </Link>
       </div>
 
       {/* Main Content Grid: On Mobile it stacks vertically, on Desktop it sits side-by-side */}
@@ -80,8 +88,8 @@ export default function ProductDetailsPage() {
         <ProductBuyBox product={product} />
       </div>
 
-      {/* Description Section */}
-      <ProductDescription description={product.description} />
+      {/* Description Section (Updated to pass the whole product object based on our previous step) */}
+      <ProductDescription product={product} />
 
       {/* You Might Also Like Section */}
       <RelatedProducts category={product.category} currentProductId={product.id} />
