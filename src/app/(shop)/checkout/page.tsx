@@ -13,11 +13,14 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { items, getCartTotal, clearCart } = useCartStore();
   const { user, profile } = useAuth();
-  
+
   const [loading, setLoading] = useState(false);
+  // Flag to prevent the useEffect from kicking us to the cart page after checkout
+  const [isOrderPlaced, setIsOrderPlaced] = useState(false); 
+
   const [formData, setFormData] = useState({
     fullName: profile?.fullName || '',
-    email: user?.email || '', // Added Email Field
+    email: user?.email || '',
     phone: profile?.phone || '',
     deliveryLocation: '',
     paymentMethod: 'pay_on_delivery',
@@ -25,8 +28,11 @@ export default function CheckoutPage() {
   });
 
   useEffect(() => {
-    if (items.length === 0) router.push('/cart');
-  }, [items, router]);
+    // Only redirect to cart if the cart is empty AND they haven't just placed an order
+    if (items.length === 0 && !isOrderPlaced) {
+      router.push('/cart');
+    }
+  }, [items, router, isOrderPlaced]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -60,15 +66,21 @@ export default function CheckoutPage() {
       const docRef = await addDoc(collection(db, 'orders'), orderData);
 
       // 3. Trigger Brevo Emails via our new API
-      await fetch('/api/email/order-confirmation', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...orderData, orderId: docRef.id }),
-      });
+      try {
+        await fetch('/api/email/order-confirmation', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ...orderData, orderId: docRef.id }),
+        });
+      } catch (emailError) {
+        console.error('Email sending failed, but order was placed:', emailError);
+      }
 
-      // 4. Clear cart & Redirect
+      // 4. Set flag, Clear cart & Redirect safely
+      setIsOrderPlaced(true);
       clearCart();
       router.push('/checkout/success');
+      
     } catch (error) {
       console.error('Error placing order:', error);
       alert('There was an issue placing your order. Please try again.');
@@ -76,7 +88,7 @@ export default function CheckoutPage() {
     }
   };
 
-  if (items.length === 0) return null;
+  if (items.length === 0 && !isOrderPlaced) return null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -84,7 +96,7 @@ export default function CheckoutPage() {
 
       <form onSubmit={handlePlaceOrder} className="flex flex-col lg:flex-row gap-8">
         <div className="flex-1 space-y-6">
-          
+
           <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
             <h2 className="text-lg font-black text-gray-900 mb-4 border-b pb-2">Customer Details</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -131,7 +143,7 @@ export default function CheckoutPage() {
         <div className="w-full lg:w-96 flex-shrink-0">
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 shadow-inner sticky top-24">
             <h2 className="text-lg font-black text-gray-900 mb-4 border-b border-gray-200 pb-2">Your Order</h2>
-            
+
             <ul className="space-y-3 mb-6 max-h-60 overflow-y-auto pr-2">
               {items.map((item) => (
                 <li key={item.id} className="flex justify-between text-sm">
