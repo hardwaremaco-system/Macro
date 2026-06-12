@@ -108,9 +108,11 @@ export default function AdminNewsPage() {
         </button>
       </div>
 
-      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 overflow-hidden flex flex-col">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 flex flex-col">
+        {/* MOBILE RESPONSIVE WRAPPER APPLIED HERE */}
+        <div className="overflow-x-auto w-full rounded-xl">
+          {/* MIN-WIDTH APPLIED HERE */}
+          <table className="w-full min-w-[800px] text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
                 <th className="px-6 py-4">Article / Event</th>
@@ -182,7 +184,7 @@ export default function AdminNewsPage() {
             </div>
 
             <form onSubmit={handleAddNews} className="p-6 overflow-y-auto">
-              
+
               {errorMsg && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm font-bold flex items-center border border-red-100">
                   <AlertCircle size={16} className="mr-2" /> {errorMsg}
