@@ -13,9 +13,13 @@ export async function POST(request: Request) {
 
     const { orderId, customerDetails, totalAmount } = data;
     
+    // IMPORTANT: The email here MUST be verified in your Brevo Dashboard!
+    const senderEmail = "sales@macrohardware.com"; // Change this if needed
+    const senderName = "Macro Hardware";
+
     // 1. Email to Customer
     const customerPayload = {
-      sender: { name: "Macro Hardware", email: "sales@macrohardware.com" },
+      sender: { name: senderName, email: senderEmail },
       to: [{ email: customerDetails.email, name: customerDetails.fullName }],
       subject: `Order Confirmation - #${orderId.slice(0, 8)}`,
       htmlContent: `
@@ -27,8 +31,8 @@ export async function POST(request: Request) {
 
     // 2. Notification to Admin
     const adminPayload = {
-      sender: { name: "Store System", email: "system@macrohardware.com" },
-      to: [{ email: "admin@macrohardware.com", name: "Admin" }], // Replace with your actual admin email
+      sender: { name: "Store System", email: senderEmail },
+      to: [{ email: "admin@macrohardware.com", name: "Admin" }], // Where you want to receive notifications
       subject: `🚨 NEW ORDER RECEIVED - #${orderId.slice(0, 8)}`,
       htmlContent: `
         <h2>New Order Received!</h2>
@@ -38,8 +42,8 @@ export async function POST(request: Request) {
       `
     };
 
-    // Send both emails via Brevo REST API
-    await Promise.all([
+    // Send emails and CAPTURE the response
+    const [customerRes, adminRes] = await Promise.all([
       fetch('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
         headers: { 'api-key': apiKey, 'Content-Type': 'application/json' },
@@ -52,9 +56,23 @@ export async function POST(request: Request) {
       })
     ]);
 
+    // Parse the JSON responses to check for Brevo errors
+    const customerData = await customerRes.json();
+    const adminData = await adminRes.json();
+
+    // Log the actual results to Vercel
+    console.log("Brevo Customer Response:", customerData);
+    console.log("Brevo Admin Response:", adminData);
+
+    // If Brevo didn't return a 200/201 OK status, throw an error to trigger the catch block
+    if (!customerRes.ok || !adminRes.ok) {
+      throw new Error(`Brevo API Error: ${JSON.stringify(customerData)} | ${JSON.stringify(adminData)}`);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Email error:', error);
+    // Now the error will properly log in Vercel!
+    console.error('Email API critical error:', error);
     return NextResponse.json({ error: 'Failed to send emails' }, { status: 500 });
   }
 }
