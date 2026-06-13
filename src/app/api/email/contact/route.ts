@@ -14,8 +14,8 @@ export async function POST(request: Request) {
     const { name, email, subject, message } = data;
 
     // Must be your verified Brevo sender email
-    const senderEmail = "hardwaremaco@gmail.com"; 
-    const adminEmail = "samwelampeire@gmail.com"; // Where you receive the messages
+    const senderEmail = "cs@macrohardwarekabale.com"; 
+    const adminEmail = "hardwaremaco@gmail.com"; // Where you receive the messages
 
     // Common styling wrapper to match your store's branding
     const emailWrapper = (content: string) => `
