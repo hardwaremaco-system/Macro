@@ -5,13 +5,13 @@ import Link from 'next/link';
 // Disconnected local array to perfectly control the homepage UI colors and layout
 const HOMEPAGE_CATEGORIES = [
   { 
-    name: 'Cement', 
+    name: 'Cement and Mortar', 
     slug: 'cement', 
     image: '/categories/cement.png', 
     bgColor: 'bg-gray-200', // Matches the light gray
   },
   { 
-    name: 'Roofing', 
+    name: 'Roofing and Glass', 
     slug: 'roofing', 
     image: '/categories/roofing.png', 
     bgColor: 'bg-[#EEDBCE]', // Matches the peach/tan
@@ -23,19 +23,19 @@ const HOMEPAGE_CATEGORIES = [
     bgColor: 'bg-[#9BA8B8]', // Matches the slate blue
   },
   { 
-    name: 'Plumbing', 
+    name: 'Plumbing and Tanks', 
     slug: 'plumbing', 
     image: '/categories/plumbing.png', 
     bgColor: 'bg-[#5D9DF5]', // Matches the bright blue
   },
   { 
-    name: 'Tools', 
+    name: 'Tools and Equipment', 
     slug: 'tools', 
     image: '/categories/tools.png', 
     bgColor: 'bg-[#F2C5D6]', // Matches the light pink
   },
   { 
-    name: 'Materials and Paint', 
+    name: 'Paint and Materials', 
     slug: 'hardware', 
     image: '/categories/hardware.png', 
     bgColor: 'bg-[#FAF7C8]', // Matches the pale yellow
