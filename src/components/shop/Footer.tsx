@@ -34,8 +34,8 @@ export default function Footer() {
   }, []);
 
   return (
-    {/* Dark Slate Background: #0f172a */}
     <footer className="bg-slate-900 text-slate-400 pt-8 md:pt-16 pb-6 md:pb-8 border-t border-slate-800 mt-auto">
+      {/* Dark Slate Background: #0f172a */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* Main Layout: Stack on mobile, Grid on desktop */}
