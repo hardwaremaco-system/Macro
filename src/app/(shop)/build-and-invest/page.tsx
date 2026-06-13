@@ -1,7 +1,6 @@
 // src/app/(shop)/build-and-invest/page.tsx
 import React from 'react';
 import Link from 'next/link';
-import { Wallet, TrendingDown, Gift, ShieldCheck, ArrowRight, CheckCircle2 } from 'lucide-react';
 
 export const metadata = {
   title: 'Build & Invest | Macro Hardware',
@@ -11,72 +10,53 @@ export const metadata = {
 export default function BuildAndInvestPage() {
   const benefits = [
     {
-      icon: Wallet,
       title: 'Start Small, Build Big',
       description: 'You don’t need millions to start. Open your Build & Invest account with a minimum of just UGX 20,000 and deposit whenever you can.',
-      color: 'bg-blue-100 text-blue-600',
     },
     {
-      icon: TrendingDown,
       title: 'Heavily Discounted Materials',
       description: 'When you are ready to construct, your invested funds unlock exclusive wholesale pricing, making your materials significantly cheaper than standard retail.',
-      color: 'bg-green-100 text-green-600',
     },
     {
-      icon: Gift,
       title: 'The 5-Bag Bonus',
       description: 'As a thank you for trusting Macro Hardware with your investment, we give you 5 FREE bags of premium cement the moment you make your first material withdrawal.',
-      color: 'bg-amber-100 text-amber-600',
     },
     {
-      icon: ShieldCheck,
       title: '100% Secure & Guaranteed',
       description: 'Your money is safe. Your funds are strictly tied to physical building materials, shielding your investment from inflation and price hikes.',
-      color: 'bg-purple-100 text-purple-600',
     },
   ];
 
   return (
-    <div className="bg-gray-50 min-h-screen pb-20">
+    <div className="bg-gray-50 min-h-screen pb-0">
       
       {/* Hero Section */}
-      <div className="bg-slate-900 pt-20 pb-32 px-4 relative overflow-hidden">
+      <div className="bg-slate-900 pt-20 pb-32 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-white via-transparent to-transparent"></div>
-        <div className="max-w-4xl mx-auto text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-500/20 text-blue-300 text-sm font-bold mb-6 border border-blue-500/30">
-            <span className="flex h-2 w-2 rounded-full bg-blue-400 animate-pulse"></span>
-            Macro Financial Services
-          </div>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6 tracking-tight">
+        
+        {/* Aligned Left */}
+        <div className="max-w-7xl mx-auto text-left relative z-10">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black text-white leading-tight mb-6 tracking-tight max-w-3xl">
             Turn Your Savings Into <br/>
             <span className="text-amber-500">Bricks & Mortar.</span>
           </h1>
-          <p className="text-lg sm:text-xl text-gray-300 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg sm:text-xl text-gray-300 max-w-2xl leading-relaxed">
             The smartest way to build in Uganda. Invest little by little, lock in cheaper material costs, and claim your free cement when it's time to break ground.
           </p>
-          <Link href="/contact" className="bg-blue-600 text-white px-8 py-4 rounded-xl font-black text-lg hover:bg-blue-700 transition-colors inline-flex items-center shadow-2xl shadow-blue-900/50">
-            Open Your Account Today <ArrowRight className="ml-2" size={20} />
-          </Link>
         </div>
       </div>
 
       {/* Benefits Grid (Pulls up into the hero) */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {benefits.map((benefit, idx) => {
-            const Icon = benefit.icon;
-            return (
-              <div key={idx} className="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-1 transition-transform duration-300">
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center mb-6 ${benefit.color}`}>
-                  <Icon size={28} />
-                </div>
-                <h3 className="text-xl font-black text-gray-900 mb-3">{benefit.title}</h3>
-                <p className="text-sm text-gray-600 leading-relaxed">
-                  {benefit.description}
-                </p>
-              </div>
-            );
-          })}
+          {benefits.map((benefit, idx) => (
+            <div key={idx} className="bg-white rounded-2xl p-6 shadow-xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-1 transition-transform duration-300 flex flex-col justify-center">
+              <h3 className="text-xl font-black text-gray-900 mb-3">{benefit.title}</h3>
+              <p className="text-sm text-gray-600 leading-relaxed">
+                {benefit.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
 
@@ -125,14 +105,14 @@ export default function BuildAndInvestPage() {
         </div>
       </div>
 
-      {/* CTA Bottom */}
-      <div className="max-w-4xl mx-auto px-4 mt-32">
-        <div className="bg-blue-600 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl">
-          <h2 className="text-3xl font-black mb-4">Ready to start investing?</h2>
-          <p className="text-blue-100 mb-8 max-w-lg mx-auto">
+      {/* CTA Bottom - Edge to Edge, Gray Background, Sharp Edges, Left Aligned */}
+      <div className="w-full bg-gray-200 mt-32 border-t border-gray-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-20 text-left">
+          <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-4">Ready to start investing?</h2>
+          <p className="text-gray-700 text-lg mb-8 max-w-2xl">
             Stop waiting for a massive lump sum. Start your building journey today with Macro Hardware.
           </p>
-          <Link href="/contact" className="bg-white text-blue-600 px-8 py-4 rounded-xl font-black hover:bg-gray-50 transition-colors inline-block">
+          <Link href="/contact" className="bg-blue-600 text-white px-8 py-4 rounded-none font-black hover:bg-blue-700 transition-colors inline-block shadow-md uppercase tracking-wider text-sm">
             Contact Us to Apply
           </Link>
         </div>
