@@ -13,8 +13,8 @@ export async function POST(request: Request) {
 
     const { orderId, customerDetails, totalAmount, items, paymentMethod } = data;
 
-    const senderEmail = "hardwaremaco@gmail.com"; 
-    const senderName = "Macro Hardware";
+    const senderEmail = "cs@macrohardwarekabale.com"; 
+    const senderName = "Macro Hardware Support";
     const shortOrderId = orderId.slice(0, 8).toUpperCase();
 
     // Generate the HTML table rows for the ordered items
@@ -81,7 +81,7 @@ export async function POST(request: Request) {
     // 2. Notification to Admin
     const adminPayload = {
       sender: { name: "Store System", email: senderEmail },
-      to: [{ email: "samwelampeire@gmail.com", name: "Admin" }],
+      to: [{ email: "hardwaremaco@gmail.com", name: "Admin" }],
       subject: `🚨 NEW ORDER: UGX ${totalAmount.toLocaleString()} - #${shortOrderId}`,
       htmlContent: emailWrapper(`
         <h2 style="color: #111827; margin-top: 0; color: #dc2626;">🚨 New Order Received!</h2>
@@ -105,7 +105,7 @@ export async function POST(request: Request) {
         </table>
         
         <div style="text-align: center; margin-top: 30px;">
-          <a href="https://yourwebsite.com/admin/orders" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">Open Admin Panel</a>
+          <a href="https://www.macrohardwarekabale.com/admin/orders" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">Open Admin Panel</a>
         </div>
       `)
     };
