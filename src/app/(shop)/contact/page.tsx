@@ -45,9 +45,9 @@ export default function ContactPage() {
       
       {/* Page Header - Left Aligned with Bullet Points */}
       <div className="max-w-3xl mb-12 md:mb-16 text-left">
-        <h1 className="text-4xl sm:text-5xl font-black mb-6 leading-tight">
-          <span className="block text-blue-600">Welcome to the</span>
-          <span className="block text-amber-500">Contact Us Page</span>
+        <h1 className="text-4xl sm:text-5xl font-black text-gray-900 mb-6 leading-tight">
+          <span className="block">Welcome to the</span>
+          <span className="block">Contact Page</span>
         </h1>
         <ul className="list-disc pl-5 text-gray-600 space-y-2 text-lg">
           <li>Open a Build & Invest account</li>
