@@ -79,7 +79,7 @@ export default function ContactPage() {
 
           <div>
             <h4 className="font-bold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Email</h4>
-            <p className="text-gray-600 text-sm md:text-base">support@macrohardware.com</p>
+            <p className="text-gray-600 text-sm md:text-base">cs@macrohardwarekabale.com</p>
           </div>
 
           <div>
