@@ -67,7 +67,7 @@ export default function PublicGalleryPage() {
               key={img.id} 
               className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] bg-gray-100 cursor-pointer"
               onClick={() => setSelectedIndex(index)}
-            </div>
+            >
               <img 
                 src={img.url} 
                 alt={img.title || 'Gallery image'} 
