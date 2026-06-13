@@ -19,7 +19,8 @@ import {
   Menu,
   ChevronLeft,
   ChevronRight,
-  X
+  X,
+  Lock // Added Lock icon for the restricted message
 } from 'lucide-react';
 
 // Strict relative path
@@ -27,17 +28,18 @@ import { useAuth } from '../../context/AuthContext';
 import { auth } from '../../lib/firebase/client';
 import { signOut } from 'firebase/auth';
 
+// 1. Added "adminOnly" flags to sensitive routes
 const adminLinks = [
   { name: 'Overview', href: '/admin', icon: LayoutDashboard },
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
-  { name: 'Customers', href: '/admin/customers', icon: Users },
-  { name: 'Search Analytics', href: '/admin/search-analytics', icon: Search },
+  { name: 'Customers', href: '/admin/customers', icon: Users, adminOnly: true },
+  { name: 'Search Analytics', href: '/admin/search-analytics', icon: Search, adminOnly: true },
   { name: 'Trusted Brands', href: '/admin/brands', icon: ShieldCheck },
   { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
   { name: 'News & Events', href: '/admin/news', icon: FileText },
   { name: 'Gallery', href: '/admin/gallery', icon: ImageIcon },
-  { name: 'Settings', href: '/admin/settings', icon: Settings },
+  { name: 'Settings', href: '/admin/settings', icon: Settings, adminOnly: true },
 ];
 
 export default function AdminLayout({
@@ -53,7 +55,7 @@ export default function AdminLayout({
   const [isDesktopExpanded, setIsDesktopExpanded] = useState(true);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-  // Route Protection Strategy
+  // General Route Protection Strategy
   useEffect(() => {
     if (!loading) {
       if (!user || (!isAdmin && !isEditor)) {
@@ -80,6 +82,19 @@ export default function AdminLayout({
     );
   }
 
+  // 2. Filter links for the sidebar so Editors don't even see them
+  const visibleLinks = adminLinks.filter(link => {
+    if (link.adminOnly && !isAdmin) return false;
+    return true;
+  });
+
+  // 3. Security Check: Did an Editor type the URL manually?
+  const isRestrictedRoute = adminLinks.some(
+    link => link.adminOnly && (pathname === link.href || pathname.startsWith(`${link.href}/`))
+  );
+  
+  const isAccessDenied = isRestrictedRoute && !isAdmin;
+
   return (
     <div className="min-h-screen flex bg-gray-100">
 
@@ -105,7 +120,7 @@ export default function AdminLayout({
             <span className={`text-xl font-black tracking-tight transition-opacity ${!isDesktopExpanded && !isMobileOpen ? 'md:block hidden' : 'hidden'}`}>
               M<span className="text-amber-500">A</span>
             </span>
-            
+
             {/* Expanded View (MACRO ADMIN) */}
             <span className={`text-xl font-black tracking-tight transition-opacity ${isDesktopExpanded || isMobileOpen ? 'block' : 'hidden md:hidden'}`}>
               MACRO <span className="text-amber-500">ADMIN</span>
@@ -123,16 +138,17 @@ export default function AdminLayout({
           <div className={`text-[10px] font-black text-blue-400 uppercase tracking-widest mb-3 px-5 ${!isDesktopExpanded && !isMobileOpen ? 'text-center px-0' : ''}`}>
              {(!isDesktopExpanded && !isMobileOpen) ? '...' : 'Management'}
           </div>
-          
+
           <nav className="space-y-1.5 px-3">
-            {adminLinks.map((link) => {
+            {/* We map over visibleLinks instead of all adminLinks */}
+            {visibleLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
               return (
                 <Link 
                   key={link.name} 
                   href={link.href}
-                  title={!isDesktopExpanded ? link.name : ''} // Shows native tooltip on hover when collapsed
+                  title={!isDesktopExpanded ? link.name : ''} 
                   className={`flex items-center px-3 py-3 rounded-xl text-sm font-bold transition-colors group ${
                     isActive ? 'bg-blue-800 text-white shadow-sm' : 'text-blue-200 hover:bg-blue-800 hover:text-white'
                   }`}
@@ -149,7 +165,7 @@ export default function AdminLayout({
 
         {/* Sidebar Footer (Exit & Toggle) */}
         <div className="p-3 border-t border-blue-800 bg-blue-950 shrink-0 space-y-2">
-          
+
           {/* Desktop Toggle Button */}
           <button 
             onClick={() => setIsDesktopExpanded(!isDesktopExpanded)}
@@ -177,7 +193,6 @@ export default function AdminLayout({
       </aside>
 
       {/* Main Content Area */}
-      {/* min-w-0 prevents flexbox from exploding past the screen width */}
       <main 
         className={`flex-1 min-h-screen flex flex-col transition-all duration-300 ease-in-out min-w-0
           ${isDesktopExpanded ? 'md:ml-64' : 'md:ml-20'}
@@ -185,7 +200,7 @@ export default function AdminLayout({
       >
         {/* Top Navbar */}
         <header className="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-8 shadow-sm sticky top-0 z-10 shrink-0">
-          
+
           {/* Mobile Hamburger Button */}
           <div className="flex items-center">
             <button 
@@ -199,18 +214,35 @@ export default function AdminLayout({
           {/* Admin User Profile Tag */}
           <div className="flex items-center gap-3">
             <div className="text-right hidden sm:block">
-              <div className="text-sm font-black text-gray-900 leading-none">Admin Portal</div>
+              <div className="text-sm font-black text-gray-900 leading-none">
+                {isAdmin ? 'Admin Portal' : 'Editor Portal'}
+              </div>
               <div className="text-xs font-bold text-gray-500 mt-1">{user.email}</div>
             </div>
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 font-black border border-blue-200">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black border ${isAdmin ? 'bg-blue-100 text-blue-700 border-blue-200' : 'bg-amber-100 text-amber-700 border-amber-200'}`}>
               {user.email?.charAt(0).toUpperCase() || 'A'}
             </div>
           </div>
         </header>
 
-        {/* Page Content Injection */}
+        {/* Page Content Injection / Security Block */}
         <div className="p-4 sm:p-8 flex-grow">
-          {children}
+          {isAccessDenied ? (
+            <div className="flex flex-col items-center justify-center mt-20 text-center">
+              <div className="w-24 h-24 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-6 border-8 border-red-100">
+                <Lock size={48} strokeWidth={1.5} />
+              </div>
+              <h2 className="text-3xl font-black text-gray-900 mb-3 tracking-tight">Access Restricted</h2>
+              <p className="text-gray-500 max-w-md mx-auto text-base">
+                Your current role as an Editor does not grant you the authority to view or modify this section. Please contact the main administrator if you require access.
+              </p>
+              <Link href="/admin" className="mt-8 bg-blue-600 text-white px-8 py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors inline-block shadow-md">
+                Return to Dashboard
+              </Link>
+            </div>
+          ) : (
+            children
+          )}
         </div>
       </main>
 
