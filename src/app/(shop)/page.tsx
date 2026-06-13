@@ -3,7 +3,7 @@ import dynamic from 'next/dynamic';
 
 import HeroSection from '../../components/shop/HeroSection';
 
-const FeaturedProducts = dynamic(() => import('../../components/shop/FeaturedProducts'));
+import FeaturedProducts from '../../components/shop/FeaturedProducts';
 const ShopByCategory = dynamic(() => import('../../components/shop/ShopByCategory'));
 const TrustedBrands = dynamic(() => import('../../components/shop/TrustedBrands'));
 const Testimonials = dynamic(() => import('../../components/shop/Testimonials'));
