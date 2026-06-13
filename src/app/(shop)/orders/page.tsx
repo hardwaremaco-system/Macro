@@ -5,7 +5,6 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { collection, query, where, getDocs, orderBy } from 'firebase/firestore';
-import { ArrowLeft, Package } from 'lucide-react';
 
 // Strict relative paths
 import { useAuth } from '../../../context/AuthContext';
@@ -66,23 +65,34 @@ export default function MyOrdersPage() {
   if (!user) return null; // Router handles the redirect
 
   return (
-    <div className="bg-gray-50 min-h-screen py-8 md:py-12">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+    <div className="bg-gray-50 min-h-screen py-6 md:py-10">
+      {/* Reduced padding to px-2 for almost edge-to-edge on mobile */}
+      <div className="max-w-6xl mx-auto px-2 sm:px-4 lg:px-8">
+
         {/* Header Section */}
-        <div className="mb-8">
-          <Link href="/profile" className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors mb-4">
-            <ArrowLeft size={16} className="mr-2" /> Back to Account
+        <div className="mb-6 px-2">
+          <Link href="/profile" className="inline-flex items-center text-sm font-bold text-gray-500 hover:text-blue-600 transition-colors mb-4 uppercase tracking-wider">
+            &larr; Back to Account
           </Link>
-          <div className="flex items-center">
-            <Package size={32} className="mr-3 text-blue-600" />
-            <h1 className="text-3xl font-black text-gray-900">My Orders</h1>
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black text-gray-900 uppercase">My Orders</h1>
           </div>
         </div>
 
-        {/* Inject your existing Order History Component */}
-        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm p-4 sm:p-6 md:p-8">
+        {/* Removed rounded borders, reduced inner padding */}
+        <div className="bg-white border-y sm:border-x border-gray-200 rounded-none shadow-sm p-3 sm:p-6 md:p-8">
+          
           <OrderHistory orders={orders} loading={loadingOrders} />
+
+          {/* "No more orders" message shown only if they actually have orders */}
+          {!loadingOrders && orders.length > 0 && (
+            <div className="text-center mt-8 pt-6 border-t border-gray-100">
+              <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                No more orders
+              </span>
+            </div>
+          )}
+
         </div>
 
       </div>
