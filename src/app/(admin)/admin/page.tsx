@@ -56,12 +56,12 @@ export default function AdminOverviewPage() {
         setRecentOrders(sortedOrders);
 
         // 2. Fetch Total Customers (Accurate Calculation)
-        // Fetch everyone, then count only the ones who are NOT admins. 
-        // This catches users even if they don't have a specific 'role' field attached to them.
+        // Ensure we DO NOT count 'admin' or 'editor' roles as customers.
         const usersSnap = await getDocs(collection(db, 'users'));
         let customerCount = 0;
         usersSnap.forEach((doc) => {
-          if (doc.data().role !== 'admin') {
+          const role = doc.data().role;
+          if (role !== 'admin' && role !== 'editor') {
             customerCount++;
           }
         });
