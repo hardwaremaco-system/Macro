@@ -2,6 +2,7 @@
 import React from 'react';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import Script from 'next/script'; // 1. Imported the Script component
 import { AuthProvider } from '../context/AuthContext';
 // THIS IS THE MOST IMPORTANT LINE IN THE ENTIRE APP
 import './globals.css';
@@ -26,6 +27,22 @@ export default function RootLayout({
             {children}
           </div>
         </AuthProvider>
+
+        {/* --- GOOGLE ANALYTICS --- */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-4JFRJWCLY8"
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
+
+            gtag('config', 'G-4JFRJWCLY8');
+          `}
+        </Script>
+        {/* ------------------------ */}
       </body>
     </html>
   );
