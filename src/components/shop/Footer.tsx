@@ -1,10 +1,37 @@
 // src/components/shop/Footer.tsx
-import React from 'react';
+'use client';
+
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Facebook, Twitter, Instagram } from 'lucide-react';
+import { doc, getDoc } from 'firebase/firestore';
+// Strict relative path
+import { db } from '../../lib/firebase/client';
 
 export default function Footer() {
-  const currentYear = 2026;
+  const currentYear = new Date().getFullYear(); // Automatically updates the year!
+
+  const [socials, setSocials] = useState({
+    facebook: '',
+    twitter: '',
+    instagram: '',
+    tiktok: '',
+  });
+
+  useEffect(() => {
+    async function fetchSocials() {
+      try {
+        const settingsRef = doc(db, 'settings', 'global');
+        const settingsSnap = await getDoc(settingsRef);
+        if (settingsSnap.exists() && settingsSnap.data().socials) {
+          setSocials(settingsSnap.data().socials);
+        }
+      } catch (error) {
+        console.error("Failed to load footer socials:", error);
+      }
+    }
+    fetchSocials();
+  }, []);
 
   return (
     <footer className="bg-white text-gray-600 pt-8 md:pt-16 pb-6 md:pb-8 border-t border-gray-200 mt-auto">
@@ -28,21 +55,39 @@ export default function Footer() {
             <p className="text-sm text-gray-600 leading-relaxed mb-6">
               Your trusted partner for premium building materials, construction supplies, and hardware in the Western Region.
             </p>
-            {/* Social Icons - Now visible on all devices */}
+            
+            {/* Social Icons - Dynamically rendered only if the link exists in the database */}
             <div className="flex space-x-3">
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition-colors">
-                <Facebook size={18} />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-400 hover:text-white transition-colors">
-                <Twitter size={18} />
-              </a>
-              <a href="#" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-pink-600 hover:text-white transition-colors">
-                <Instagram size={18} />
-              </a>
+              {socials.facebook && (
+                <a href={socials.facebook} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-600 hover:text-white transition-colors">
+                  <Facebook size={18} />
+                </a>
+              )}
+              
+              {socials.twitter && (
+                <a href={socials.twitter} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-blue-400 hover:text-white transition-colors">
+                  <Twitter size={18} />
+                </a>
+              )}
+
+              {socials.instagram && (
+                <a href={socials.instagram} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-pink-600 hover:text-white transition-colors">
+                  <Instagram size={18} />
+                </a>
+              )}
+
+              {socials.tiktok && (
+                <a href={socials.tiktok} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 hover:bg-black hover:text-white transition-colors">
+                  {/* Custom SVG for TikTok since standard lucide doesn't include it */}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                  </svg>
+                </a>
+              )}
             </div>
           </div>
 
-          {/* 2. Quick Links - Now visible on all devices */}
+          {/* 2. Quick Links */}
           <div className="order-2">
             <h3 className="text-gray-900 font-black mb-4 uppercase tracking-wider text-sm">Quick Links</h3>
             <ul className="space-y-3 text-sm">
@@ -54,7 +99,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* 3. Customer Service - Now visible on all devices */}
+          {/* 3. Customer Service */}
           <div className="order-3">
             <h3 className="text-gray-900 font-black mb-4 uppercase tracking-wider text-sm">Customer Service</h3>
             <ul className="space-y-3 text-sm">
@@ -65,7 +110,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* 4. Contact Details - Now fully visible on all devices */}
+          {/* 4. Contact Details */}
           <div className="order-4 flex flex-col space-y-3 text-sm text-gray-600">
             <h3 className="text-gray-900 font-black mb-1 uppercase tracking-wider text-sm">Contact Us</h3>
             <div>Kabale Town, Western Region, Uganda</div>
