@@ -140,17 +140,34 @@ export default function BroadcastPage() {
           {/* Banner Image */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Banner Image (Optional)</label>
-            {formData.image ? (
-              <div className="relative w-full max-w-md h-48 rounded-xl overflow-hidden border-2 border-blue-500 shadow-sm group">
+            
+            {/* 1. Preview Section - Shows when image exists */}
+            {formData.image && (
+              <div className="relative w-full max-w-md h-48 rounded-xl overflow-hidden border-2 border-blue-500 shadow-sm group mb-4">
                 <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
-                <button type="button" onClick={() => setFormData({ ...formData, image: '' })} className="absolute top-3 right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                <button 
+                  type="button" 
+                  onClick={() => setFormData({ ...formData, image: '' })} 
+                  className="absolute top-3 right-3 bg-red-500 text-white p-1.5 rounded-full hover:bg-red-600 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+                >
                   <X size={16}/>
                 </button>
               </div>
-            ) : (
+            )}
+
+            {/* 2. Upload Widget - We hide it using CSS instead of unmounting it so it can clean up its scroll locks */}
+            <div className={formData.image ? 'hidden' : 'block'}>
               <CldUploadWidget 
                 signatureEndpoint="/api/cloudinary/sign"
-                onSuccess={(result: any) => setFormData({ ...formData, image: result.info.secure_url })}
+                onSuccess={(result: any) => {
+                  setFormData({ ...formData, image: result.info.secure_url });
+                  // Failsafe: Forcefully remove the scroll lock that Cloudinary adds
+                  document.body.style.overflow = 'unset';
+                }}
+                onClose={() => {
+                  // Failsafe: Forcefully remove the scroll lock if they just close the modal
+                  document.body.style.overflow = 'unset';
+                }}
               >
                 {({ open }) => (
                   <button type="button" onClick={() => open()} className="w-full max-w-md h-32 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-500 hover:bg-blue-50 hover:border-blue-300 hover:text-blue-600 transition-colors bg-gray-50">
@@ -159,7 +176,7 @@ export default function BroadcastPage() {
                   </button>
                 )}
               </CldUploadWidget>
-            )}
+            </div>
           </div>
 
           {/* Message Body */}
