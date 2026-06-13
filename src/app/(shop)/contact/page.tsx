@@ -45,7 +45,10 @@ export default function ContactPage() {
       
       {/* Page Header - Left Aligned with Bullet Points */}
       <div className="max-w-3xl mb-12 md:mb-16 text-left">
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-6">Welcome to the Contact Us Page</h1>
+        <h1 className="text-4xl sm:text-5xl font-black mb-6 leading-tight">
+          <span className="block text-blue-600">Welcome to the</span>
+          <span className="block text-amber-500">Contact Us Page</span>
+        </h1>
         <ul className="list-disc pl-5 text-gray-600 space-y-2 text-lg">
           <li>Open a Build & Invest account</li>
           <li>Request a quote for a large construction project</li>
@@ -58,9 +61,8 @@ export default function ContactPage() {
         
         {/* Contact Information */}
         <div className="lg:col-span-1 space-y-8">
-          {/* Changed to light gray background, added standard padding, removed edge-to-edge classes */}
           <div className="bg-gray-100 p-5 sm:p-8 rounded-2xl border border-gray-200 shadow-sm">
-            <h3 className="text-xl font-black mb-6 border-b border-gray-300 pb-4 text-gray-900">Store Details</h3>
+            <h3 className="text-xl font-black mb-6 border-b border-gray-300 pb-4 text-blue-600">Store Details</h3>
 
             <div className="space-y-6">
               <div>
@@ -89,7 +91,7 @@ export default function ContactPage() {
         {/* Contact Form */}
         <div className="lg:col-span-2">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-            <h3 className="text-2xl font-black text-gray-900 mb-6">Send us a Message</h3>
+            <h3 className="text-2xl font-black text-blue-600 mb-6">Send us a Message</h3>
 
             {/* Success Message */}
             {status === 'success' && (
