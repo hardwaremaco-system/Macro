@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
-import { Save, Link as LinkIcon, Users, Shield, CheckCircle } from 'lucide-react';
+import { Save, Link as LinkIcon, Users, Shield, CheckCircle, Database, Download } from 'lucide-react';
 // Strict relative path
 import { db } from '../../../../lib/firebase/client';
 
@@ -84,6 +84,31 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // --- EXPORT DATABASE (JSON BACKUPS) ---
+  const handleExportData = async (collectionName: string) => {
+    try {
+      setSuccessMsg(`Preparing ${collectionName} backup...`);
+      const snap = await getDocs(collection(db, collectionName));
+      const data = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `macrohardware_${collectionName}_backup_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      setSuccessMsg(`${collectionName} downloaded successfully!`);
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (error) {
+      console.error('Export error:', error);
+      alert(`Failed to export ${collectionName}`);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -97,7 +122,7 @@ export default function AdminSettingsPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-gray-900">System Settings</h1>
-          <p className="text-sm text-gray-500 mt-1">Manage store configurations and staff access.</p>
+          <p className="text-sm text-gray-500 mt-1">Manage store configurations, staff access, and data backups.</p>
         </div>
         {successMsg && (
           <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm">
@@ -119,6 +144,12 @@ export default function AdminSettingsPage() {
           className={`flex items-center px-5 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'team' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'}`}
         >
           <Users size={16} className="mr-2" /> Team Access
+        </button>
+        <button 
+          onClick={() => setActiveTab('backup')}
+          className={`flex items-center px-5 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'backup' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'}`}
+        >
+          <Database size={16} className="mr-2" /> Data Backup
         </button>
       </div>
 
@@ -207,6 +238,49 @@ export default function AdminSettingsPage() {
                 ))}
               </tbody>
             </table>
+          </div>
+        </div>
+      )}
+
+      {/* --- TAB 3: DATA EXPORT (BACKUPS) --- */}
+      {activeTab === 'backup' && (
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 bg-gray-50">
+            <h2 className="text-lg font-black text-gray-900">Manual Data Export</h2>
+            <p className="text-sm text-gray-500 mt-1">Download local JSON copies of your essential database collections in case of a breach or data loss.</p>
+          </div>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div className="border border-gray-200 rounded-xl p-5 hover:border-blue-300 transition-colors bg-white shadow-sm flex flex-col justify-between">
+              <div>
+                <h3 className="font-black text-gray-900 mb-1">Products Catalog</h3>
+                <p className="text-xs text-gray-500 mb-4 h-12">All active and draft products including pricing, descriptions, and stock quantities.</p>
+              </div>
+              <button onClick={() => handleExportData('products')} className="w-full bg-blue-50 text-blue-700 py-2.5 rounded-lg font-bold text-sm hover:bg-blue-100 transition-colors flex items-center justify-center border border-blue-200">
+                <Download size={16} className="mr-2" /> Download Backup
+              </button>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-5 hover:border-blue-300 transition-colors bg-white shadow-sm flex flex-col justify-between">
+              <div>
+                <h3 className="font-black text-gray-900 mb-1">Order History</h3>
+                <p className="text-xs text-gray-500 mb-4 h-12">Complete log of all customer transactions, revenue data, and delivery details.</p>
+              </div>
+              <button onClick={() => handleExportData('orders')} className="w-full bg-blue-50 text-blue-700 py-2.5 rounded-lg font-bold text-sm hover:bg-blue-100 transition-colors flex items-center justify-center border border-blue-200">
+                <Download size={16} className="mr-2" /> Download Backup
+              </button>
+            </div>
+
+            <div className="border border-gray-200 rounded-xl p-5 hover:border-blue-300 transition-colors bg-white shadow-sm flex flex-col justify-between">
+              <div>
+                <h3 className="font-black text-gray-900 mb-1">Customer List</h3>
+                <p className="text-xs text-gray-500 mb-4 h-12">All registered user profiles, contact information, email addresses, and assigned roles.</p>
+              </div>
+              <button onClick={() => handleExportData('users')} className="w-full bg-blue-50 text-blue-700 py-2.5 rounded-lg font-bold text-sm hover:bg-blue-100 transition-colors flex items-center justify-center border border-blue-200">
+                <Download size={16} className="mr-2" /> Download Backup
+              </button>
+            </div>
+
           </div>
         </div>
       )}
