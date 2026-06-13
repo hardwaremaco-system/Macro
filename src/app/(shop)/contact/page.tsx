@@ -69,12 +69,12 @@ export default function ContactPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8 text-left">
           <div>
             <h4 className="font-bold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Our Location</h4>
-            <p className="text-gray-600 text-sm md:text-base leading-relaxed">Main Street, Kabale Town<br/>Western Region, Uganda</p>
+            <p className="text-gray-600 text-sm md:text-base leading-relaxed">Along Kabale Katuna Rd , Opposite Kabale University Rd <br/>Karambuzi Complex</p>
           </div>
 
           <div>
             <h4 className="font-bold text-gray-900 mb-1 md:mb-2 text-base md:text-lg">Phone & WhatsApp</h4>
-            <p className="text-gray-600 text-sm md:text-base">+256 700 000 000</p>
+            <p className="text-gray-600 text-sm md:text-base">+256778522222</p>
           </div>
 
           <div>
@@ -117,11 +117,11 @@ export default function ContactPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
                 <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Your Name</label>
-                <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="John Doe" />
+                <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="e.g Ampeire Samuel" />
               </div>
               <div>
                 <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Email Address</label>
-                <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="john@example.com" />
+                <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="e.g myname@gmail.com" />
               </div>
             </div>
 
