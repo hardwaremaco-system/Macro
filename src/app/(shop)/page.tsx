@@ -3,13 +3,13 @@ import dynamic from 'next/dynamic';
 
 import HeroSection from '../../components/shop/HeroSection';
 
-const TrustedBrands = dynamic(() => import('../../components/shop/TrustedBrands'));
 const FeaturedProducts = dynamic(() => import('../../components/shop/FeaturedProducts'));
 const ShopByCategory = dynamic(() => import('../../components/shop/ShopByCategory'));
-const LatestProducts = dynamic(() => import('../../components/shop/LatestProducts'));
-const NewsEventsPreview = dynamic(() => import('../../components/shop/NewsEventsPreview'));
+const TrustedBrands = dynamic(() => import('../../components/shop/TrustedBrands'));
 const Testimonials = dynamic(() => import('../../components/shop/Testimonials'));
+const LatestProducts = dynamic(() => import('../../components/shop/LatestProducts'));
 const BuildAndInvestBanner = dynamic(() => import('../../components/shop/BuildAndInvestBanner'));
+const NewsEventsPreview = dynamic(() => import('../../components/shop/NewsEventsPreview'));
 
 export default function HomePage() {
   return (
