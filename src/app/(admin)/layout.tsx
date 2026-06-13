@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   X,
-  Lock // Added Lock icon for the restricted message
+  Lock, // Added Lock icon for the restricted message
+  Mailbox // Added Mailbox icon for the Broadcast link
 } from 'lucide-react';
 
 // Strict relative path
@@ -34,6 +35,7 @@ const adminLinks = [
   { name: 'Orders', href: '/admin/orders', icon: ShoppingCart },
   { name: 'Products', href: '/admin/products', icon: Package },
   { name: 'Customers', href: '/admin/customers', icon: Users, adminOnly: true },
+  { name: 'Email Broadcast', href: '/admin/broadcast', icon: Mailbox, adminOnly: true },
   { name: 'Search Analytics', href: '/admin/search-analytics', icon: Search, adminOnly: true },
   { name: 'Trusted Brands', href: '/admin/brands', icon: ShieldCheck },
   { name: 'Testimonials', href: '/admin/testimonials', icon: MessageSquare },
@@ -92,7 +94,7 @@ export default function AdminLayout({
   const isRestrictedRoute = adminLinks.some(
     link => link.adminOnly && (pathname === link.href || pathname.startsWith(`${link.href}/`))
   );
-  
+
   const isAccessDenied = isRestrictedRoute && !isAdmin;
 
   return (
