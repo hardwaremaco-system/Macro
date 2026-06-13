@@ -13,8 +13,8 @@ export async function POST(request: Request) {
     const { name, email } = data;
 
     // Must be your verified Brevo sender email
-    const senderEmail = "hardwaremaco@gmail.com"; 
-    const senderName = "Macro Hardware";
+    const senderEmail = "cs@macrohardwarekabale.com"; 
+    const senderName = "Macro Hardware Support";
 
     const emailPayload = {
       sender: { name: senderName, email: senderEmail },
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
                 <li>Stay updated on exclusive promotions and events.</li>
               </ul>
               <div style="margin-top: 30px; text-align: center;">
-                <a href="https://yourdomain.com/login" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">Log In to Your Account</a>
+                <a href="https://www.macrohardwarekabale.com/login" style="background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; display: inline-block;">Log In to Your Account</a>
               </div>
             </div>
             <div style="background-color: #f3f4f6; padding: 20px; text-align: center; font-size: 12px; color: #6b7280;">
