@@ -2,140 +2,215 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { Save, Settings as SettingsIcon, Phone, Mail, MapPin } from 'lucide-react';
+import { doc, getDoc, updateDoc, collection, getDocs } from 'firebase/firestore';
+import { Save, Link as LinkIcon, Users, Shield, CheckCircle } from 'lucide-react';
 // Strict relative path
 import { db } from '../../../../lib/firebase/client';
 
 export default function AdminSettingsPage() {
+  const [activeTab, setActiveTab] = useState('social');
   const [loading, setLoading] = useState(true);
-  const [isSaving, setIsSaving] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [successMsg, setSuccessMsg] = useState('');
 
-  const [formData, setFormData] = useState({
-    storeName: 'Macro Hardware',
-    whatsappNumber: '+256700000000',
-    supportEmail: 'support@macrohardware.com',
-    storeAddress: 'Kabale Town, Western Region, Uganda',
-    facebookUrl: '',
-    deliveryFee: '10000',
+  // Tab 1: Social & Store Links
+  const [socialLinks, setSocialLinks] = useState({
+    facebook: '',
+    twitter: '', // Acts as the X account
+    instagram: '',
+    tiktok: '',
   });
 
-  // Fetch existing settings
+  // Tab 2: Team & Roles
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+
   useEffect(() => {
-    async function fetchSettings() {
-      try {
-        const docRef = doc(db, 'settings', 'store_config');
-        const docSnap = await getDoc(docRef);
-        
-        if (docSnap.exists()) {
-          setFormData({ ...formData, ...docSnap.data() });
-        }
-      } catch (error) {
-        console.error('Error fetching settings:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchSettings();
+    fetchData();
   }, []);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      // 1. Fetch Global Settings (Socials)
+      const settingsRef = doc(db, 'settings', 'global');
+      const settingsSnap = await getDoc(settingsRef);
+      if (settingsSnap.exists() && settingsSnap.data().socials) {
+        setSocialLinks(settingsSnap.data().socials);
+      }
+
+      // 2. Fetch Users to manage roles
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const usersList = usersSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      setTeamMembers(usersList);
+
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSaveSettings = async (e: React.FormEvent) => {
+  // --- SAVE SOCIAL LINKS ---
+  const handleSaveSocials = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-
+    setSaving(true);
+    setSuccessMsg('');
     try {
-      const docRef = doc(db, 'settings', 'store_config');
-      // setDoc with merge: true will create it if it doesn't exist, or update if it does
-      await setDoc(docRef, formData, { merge: true });
-      alert('Store settings saved successfully!');
+      await updateDoc(doc(db, 'settings', 'global'), {
+        socials: socialLinks
+      });
+      setSuccessMsg('Social links updated successfully!');
+      setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error) {
-      console.error('Error saving settings:', error);
+      console.error('Error saving socials:', error);
       alert('Failed to save settings.');
     } finally {
-      setIsSaving(false);
+      setSaving(false);
+    }
+  };
+
+  // --- UPDATE USER ROLE ---
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    if (!confirm(`Are you sure you want to change this user's role to ${newRole.toUpperCase()}?`)) return;
+    
+    try {
+      await updateDoc(doc(db, 'users', userId), { role: newRole });
+      setTeamMembers(prev => prev.map(user => user.id === userId ? { ...user, role: newRole } : user));
+      setSuccessMsg('User role updated!');
+      setTimeout(() => setSuccessMsg(''), 3000);
+    } catch (error) {
+      console.error('Error updating role:', error);
+      alert('Failed to update user role.');
     }
   };
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-full">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-2xl font-black text-gray-900 flex items-center">
-          <SettingsIcon size={28} className="mr-3 text-blue-600" /> Store Configuration
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">Manage global website settings, contact details, and social links.</p>
+    <div className="max-w-5xl mx-auto pb-12">
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-black text-gray-900">System Settings</h1>
+          <p className="text-sm text-gray-500 mt-1">Manage store configurations and staff access.</p>
+        </div>
+        {successMsg && (
+          <div className="bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm font-bold flex items-center shadow-sm">
+            <CheckCircle size={16} className="mr-2" /> {successMsg}
+          </div>
+        )}
       </div>
 
-      <form onSubmit={handleSaveSettings} className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        
-        {/* General Info */}
-        <div className="p-6 sm:p-8 border-b border-gray-100">
-          <h2 className="text-lg font-black text-gray-900 mb-6">General Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-1">Store Name</label>
-              <input name="storeName" value={formData.storeName} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500 bg-gray-50" />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center">
-                <Phone size={14} className="mr-1 text-gray-400" /> WhatsApp / Phone
-              </label>
-              <input name="whatsappNumber" value={formData.whatsappNumber} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
-            </div>
+      {/* Settings Navigation */}
+      <div className="flex space-x-2 border-b border-gray-200 mb-6 overflow-x-auto">
+        <button 
+          onClick={() => setActiveTab('social')}
+          className={`flex items-center px-5 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'social' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'}`}
+        >
+          <LinkIcon size={16} className="mr-2" /> Social Media
+        </button>
+        <button 
+          onClick={() => setActiveTab('team')}
+          className={`flex items-center px-5 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'team' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'}`}
+        >
+          <Users size={16} className="mr-2" /> Team Access
+        </button>
+      </div>
 
+      {/* --- TAB 1: SOCIAL MEDIA LINKS --- */}
+      {activeTab === 'social' && (
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+          <div className="p-6 border-b border-gray-100 bg-gray-50">
+            <h2 className="text-lg font-black text-gray-900">Social Media Links</h2>
+            <p className="text-sm text-gray-500 mt-1">These links will appear in your website footer.</p>
+          </div>
+          <form onSubmit={handleSaveSocials} className="p-6 space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Facebook URL</label>
+                <input type="url" value={socialLinks.facebook} onChange={e => setSocialLinks({...socialLinks, facebook: e.target.value})} placeholder="https://facebook.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">X (formerly Twitter) URL</label>
+                <input type="url" value={socialLinks.twitter} onChange={e => setSocialLinks({...socialLinks, twitter: e.target.value})} placeholder="https://x.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">Instagram URL</label>
+                <input type="url" value={socialLinks.instagram} onChange={e => setSocialLinks({...socialLinks, instagram: e.target.value})} placeholder="https://instagram.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-1">TikTok URL</label>
+                <input type="url" value={socialLinks.tiktok} onChange={e => setSocialLinks({...socialLinks, tiktok: e.target.value})} placeholder="https://tiktok.com/@..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+              </div>
+            </div>
+            <div className="pt-4 border-t border-gray-100">
+              <button type="submit" disabled={saving} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center">
+                <Save size={18} className="mr-2" /> {saving ? 'Saving...' : 'Save Links'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* --- TAB 2: TEAM ACCESS (RBAC) --- */}
+      {activeTab === 'team' && (
+        <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden flex flex-col">
+          <div className="p-6 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center">
-                <Mail size={14} className="mr-1 text-gray-400" /> Support Email
-              </label>
-              <input name="supportEmail" type="email" value={formData.supportEmail} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
+              <h2 className="text-lg font-black text-gray-900">Role Management</h2>
+              <p className="text-sm text-gray-500 mt-1">Upgrade normal customers to Editors or Admins.</p>
             </div>
-            
-            <div className="md:col-span-2">
-              <label className="block text-sm font-bold text-gray-700 mb-1 flex items-center">
-                <MapPin size={14} className="mr-1 text-gray-400" /> Physical Address
-              </label>
-              <input name="storeAddress" value={formData.storeAddress} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
-            </div>
+            <Shield className="text-blue-600 opacity-20" size={40} />
+          </div>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[600px]">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-4">User Name / Email</th>
+                  <th className="px-6 py-4">Current Role</th>
+                  <th className="px-6 py-4 text-right">Change Role</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {teamMembers.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="text-sm font-bold text-gray-900">{user.displayName || 'No Name Provided'}</div>
+                      <div className="text-xs text-gray-500">{user.email}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-block px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider ${
+                        user.role === 'admin' ? 'bg-red-100 text-red-700' :
+                        user.role === 'editor' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                      }`}>
+                        {user.role || 'Customer'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <select 
+                        value={user.role || 'customer'}
+                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                        className="border border-gray-300 rounded-lg p-2 text-sm bg-white focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="customer">Customer</option>
+                        <option value="editor">Editor (Limited Access)</option>
+                        <option value="admin">Full Admin</option>
+                      </select>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
+      )}
 
-        {/* E-Commerce Config */}
-        <div className="p-6 sm:p-8 border-b border-gray-100 bg-gray-50">
-          <h2 className="text-lg font-black text-gray-900 mb-6">E-Commerce Settings</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Standard Delivery Fee (UGX)</label>
-              <input name="deliveryFee" type="number" value={formData.deliveryFee} onChange={handleChange} className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
-              <p className="text-xs text-gray-500 mt-1">This will be added to orders at checkout.</p>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-bold text-gray-700 mb-1">Facebook Page URL</label>
-              <input name="facebookUrl" value={formData.facebookUrl} onChange={handleChange} placeholder="https://facebook.com/..." className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-blue-500 focus:border-blue-500" />
-            </div>
-          </div>
-        </div>
-
-        {/* Actions */}
-        <div className="px-6 py-4 bg-white flex justify-end">
-          <button type="submit" disabled={isSaving} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm disabled:opacity-50">
-            {isSaving ? 'Saving...' : <><Save size={18} className="mr-2" /> Save Settings</>}
-          </button>
-        </div>
-
-      </form>
     </div>
   );
 }
