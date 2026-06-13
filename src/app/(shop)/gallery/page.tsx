@@ -1,14 +1,18 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { collection, getDocs, query, orderBy } from 'firebase/firestore';
-import { Image as ImageIcon, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Image as ImageIcon, X } from 'lucide-react';
 import { db } from '../../../lib/firebase/client';
 
 export default function PublicGalleryPage() {
   const [images, setImages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     async function fetchGallery() {
@@ -25,21 +29,46 @@ export default function PublicGalleryPage() {
     fetchGallery();
   }, []);
 
+  // Lock body scroll and auto-scroll to the clicked image when modal opens
+  useEffect(() => {
+    if (isModalOpen) {
+      document.body.style.overflow = 'hidden';
+
+      if (scrollContainerRef.current) {
+        const width = scrollContainerRef.current.clientWidth;
+        scrollContainerRef.current.scrollTo({ left: width * activeIndex, behavior: 'instant' as ScrollBehavior });
+      }
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => { document.body.style.overflow = 'unset'; };
+  }, [isModalOpen]);
+
+  // Handle escape key to close
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedIndex === null) return;
-      if (e.key === 'Escape') setSelectedIndex(null);
-      if (e.key === 'ArrowRight') {
-        setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev! + 1));
-      }
-      if (e.key === 'ArrowLeft') {
-        setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev! - 1));
-      }
+      if (isModalOpen && e.key === 'Escape') setIsModalOpen(false);
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIndex, images.length]);
+  }, [isModalOpen]);
+
+  // Update active index based on swipe position
+  const handleModalScroll = (e: React.UIEvent<HTMLDivElement>) => {
+    if (!scrollContainerRef.current) return;
+    const scrollLeft = e.currentTarget.scrollLeft;
+    const width = e.currentTarget.clientWidth;
+    const newIndex = Math.round(scrollLeft / width);
+
+    if (newIndex !== activeIndex && newIndex >= 0 && newIndex < images.length) {
+      setActiveIndex(newIndex);
+    }
+  };
+
+  const openModal = (index: number) => {
+    setActiveIndex(index);
+    setIsModalOpen(true);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -66,7 +95,7 @@ export default function PublicGalleryPage() {
             <div 
               key={img.id} 
               className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 aspect-[4/3] bg-gray-100 cursor-pointer"
-              onClick={() => setSelectedIndex(index)}
+              onClick={() => openModal(index)}
             >
               <img 
                 src={img.url} 
@@ -83,61 +112,47 @@ export default function PublicGalleryPage() {
         </div>
       )}
 
-      {selectedIndex !== null && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-sm"
-          onClick={() => setSelectedIndex(null)}
-        >
-          <button 
-            className="absolute top-6 right-6 text-white/60 hover:text-white transition-colors z-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedIndex(null);
-            }}
-          >
-            <X size={36} />
-          </button>
-
-          <button 
-            className="absolute left-2 sm:left-8 top-1/2 -translate-y-1/2 text-white/60 hover:text-white p-2 transition-colors z-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedIndex((prev) => (prev === 0 ? images.length - 1 : prev! - 1));
-            }}
-          >
-            <ChevronLeft size={48} />
-          </button>
-
-          <button 
-            className="absolute right-2 sm:right-8 top-1/2 -translate-y-1/2 text-white/60 hover:text-white p-2 transition-colors z-50"
-            onClick={(e) => {
-              e.stopPropagation();
-              setSelectedIndex((prev) => (prev === images.length - 1 ? 0 : prev! + 1));
-            }}
-          >
-            <ChevronRight size={48} />
-          </button>
-
-          <div 
-            className="relative max-w-7xl w-full max-h-screen px-12 sm:px-24 py-12 flex flex-col items-center justify-center"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img 
-              src={images[selectedIndex].url} 
-              alt={images[selectedIndex].title || 'Gallery full view'} 
-              className="max-w-full max-h-[80vh] object-contain rounded-lg shadow-2xl select-none"
-            />
-            {images[selectedIndex].title && (
-              <div className="absolute bottom-6 left-0 right-0 text-center px-4">
-                <h3 className="text-white text-xl sm:text-2xl font-medium tracking-wide drop-shadow-md">
-                  {images[selectedIndex].title}
-                </h3>
-              </div>
-            )}
-            <div className="absolute top-6 left-6 text-white/50 text-sm font-medium tracking-widest">
-              {selectedIndex + 1} / {images.length}
-            </div>
+      {/* Full Screen Photo Gallery Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col">
+          
+          {/* Top Bar */}
+          <div className="flex justify-between items-center p-4 sm:p-6 text-white absolute top-0 w-full z-10 bg-gradient-to-b from-black/50 to-transparent">
+            <span className="font-bold text-sm tracking-widest">
+              {activeIndex + 1} / {images.length}
+            </span>
+            <button 
+              onClick={() => setIsModalOpen(false)}
+              className="p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors backdrop-blur-md"
+            >
+              <X size={24} />
+            </button>
           </div>
+
+          {/* Swipeable Image Container */}
+          <div 
+            ref={scrollContainerRef}
+            onScroll={handleModalScroll}
+            className="flex-1 flex overflow-x-auto snap-x snap-mandatory scrollbar-hide"
+          >
+            {images.map((img, idx) => (
+              <div key={idx} className="min-w-full h-full flex items-center justify-center snap-center p-4 sm:p-12 relative">
+                <img 
+                  src={img.url} 
+                  alt={img.title || `Gallery Image ${idx + 1}`} 
+                  className="max-w-full max-h-full object-contain select-none" 
+                />
+                {img.title && (
+                  <div className="absolute bottom-8 left-0 right-0 text-center px-4 pointer-events-none">
+                    <h3 className="text-white text-xl sm:text-2xl font-medium tracking-wide drop-shadow-md">
+                      {img.title}
+                    </h3>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
         </div>
       )}
     </div>
