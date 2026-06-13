@@ -114,7 +114,7 @@ export default function Footer() {
           {/* 4. Contact Details */}
           <div className="order-4 flex flex-col space-y-3 text-sm text-slate-400">
             <h3 className="text-white font-black mb-1 uppercase tracking-wider text-sm">Contact Us</h3>
-            <div className="hover:text-orange-500 transition-colors cursor-default">Kabale Town, Western Region, Uganda</div>
+            <div className="hover:text-orange-500 transition-colors cursor-default">Along Kabale Katuna Rd , Opposite Kabale University Rd at Karambuzi Complex</div>
             <a href="tel:0778522222" className="hover:text-orange-500 transition-colors font-bold">0778522222</a>
             <a href="mailto:cs@macrohardwarekabale.com" className="hover:text-orange-500 transition-colors font-bold">cs@macrohardwarekabale.com</a>
           </div>
