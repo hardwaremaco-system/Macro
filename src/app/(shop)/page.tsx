@@ -15,13 +15,14 @@ export default function HomePage() {
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       <HeroSection />
-
-      <FeaturedProducts />
-
-      <div className="bg-white border-y border-gray-200">
+<div className="bg-white border-y border-gray-200">
         <ShopByCategory />
       </div>
 
+
+      <FeaturedProducts />
+
+      
       <TrustedBrands />
 
       <Testimonials />
