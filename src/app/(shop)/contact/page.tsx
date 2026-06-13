@@ -41,111 +41,112 @@ export default function ContactPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20 lg:py-24">
       
-      {/* Page Header - Left Aligned, scales up for desktop */}
-      <div className="max-w-3xl mb-12 md:mb-16 lg:mb-20 text-left">
-        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-6 lg:mb-8 leading-tight tracking-tight">
+      {/* Page Header - Centered with Side-by-Side Bullet Points */}
+      <div className="max-w-4xl mx-auto mb-12 md:mb-16 lg:mb-20 text-center">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-gray-900 mb-8 leading-tight tracking-tight">
           <span className="block">Welcome to the</span>
           <span className="block text-blue-600">Contact Us Page</span>
         </h1>
-        <ul className="list-disc pl-5 text-gray-600 space-y-3 text-lg md:text-xl lg:leading-relaxed">
-          <li>Open a Build & Invest account</li>
-          <li>Request a quote for a large construction project</li>
-          <li>Inquire about specific products or materials</li>
-          <li>Get support for existing orders and deliveries</li>
-        </ul>
+        
+        {/* Centered container for left-aligned, 2-column bullet points */}
+        <div className="flex justify-center">
+          <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-4 text-left text-gray-600 text-lg md:text-xl list-disc pl-5">
+            <li>Open a Build & Invest account</li>
+            <li>Request a quote for a large construction project</li>
+            <li>Inquire about specific products or materials</li>
+            <li>Get support for existing orders and deliveries</li>
+          </ul>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16">
-        
-        {/* Contact Information (Takes up 4 columns on desktop) */}
-        <div className="lg:col-span-4 space-y-8">
-          <div className="bg-gray-50 p-6 sm:p-8 lg:p-10 rounded-2xl lg:rounded-3xl border border-gray-200 shadow-sm h-full">
-            <h3 className="text-xl md:text-2xl font-black mb-8 border-b border-gray-200 pb-4 text-blue-600 tracking-tight">
-              Store Details
-            </h3>
+      {/* Contact Information - Side-by-Side Grid */}
+      <div className="bg-gray-50 p-6 sm:p-8 lg:p-10 rounded-2xl lg:rounded-3xl border border-gray-200 shadow-sm mb-12 lg:mb-16">
+        <h3 className="text-xl md:text-2xl font-black mb-8 border-b border-gray-200 pb-4 text-blue-600 tracking-tight text-center">
+          Store Details
+        </h3>
 
-            <div className="space-y-8">
-              <div>
-                <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Our Location</h4>
-                <p className="text-gray-600 text-sm md:text-base leading-relaxed">Main Street, Kabale Town<br/>Western Region, Uganda</p>
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+          <div>
+            <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Our Location</h4>
+            <p className="text-gray-600 text-sm md:text-base leading-relaxed">Main Street, Kabale Town<br/>Western Region, Uganda</p>
+          </div>
 
-              <div>
-                <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Phone & WhatsApp</h4>
-                <p className="text-gray-600 text-sm md:text-base">+256 700 000 000</p>
-              </div>
+          <div>
+            <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Phone & WhatsApp</h4>
+            <p className="text-gray-600 text-sm md:text-base">+256 700 000 000</p>
+          </div>
 
-              <div>
-                <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Email</h4>
-                <p className="text-gray-600 text-sm md:text-base">support@macrohardware.com</p>
-              </div>
+          <div>
+            <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Email</h4>
+            <p className="text-gray-600 text-sm md:text-base">support@macrohardware.com</p>
+          </div>
 
-              <div>
-                <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Working Hours</h4>
-                <p className="text-gray-600 text-sm md:text-base">Mon - Sat: 8:00 AM - 6:00 PM<br/>Sunday: Closed</p>
-              </div>
-            </div>
+          <div>
+            <h4 className="font-bold text-gray-900 mb-2 text-base md:text-lg">Working Hours</h4>
+            <p className="text-gray-600 text-sm md:text-base">Mon - Sat: 8:00 AM - 6:00 PM<br/>Sunday: Closed</p>
           </div>
         </div>
+      </div>
 
-        {/* Contact Form (Takes up 8 columns on desktop) */}
-        <div className="lg:col-span-8">
-          <div className="bg-white rounded-2xl lg:rounded-3xl shadow-lg border border-gray-100 p-6 sm:p-8 md:p-10 lg:p-12 h-full">
-            <h3 className="text-2xl md:text-3xl font-black text-blue-600 mb-8 tracking-tight">
-              Send us a Message
-            </h3>
+      {/* Contact Form - Centered Full Width */}
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white rounded-2xl lg:rounded-3xl shadow-lg border border-gray-100 p-6 sm:p-8 md:p-10 lg:p-12">
+          <h3 className="text-2xl md:text-3xl font-black text-blue-600 mb-8 tracking-tight text-center md:text-left">
+            Send us a Message
+          </h3>
 
-            {/* Success Message */}
-            {status === 'success' && (
-              <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-8 border border-green-200 font-bold flex items-center md:text-lg">
-                Message sent successfully! We will get back to you soon.
+          {/* Success Message */}
+          {status === 'success' && (
+            <div className="bg-green-50 text-green-700 p-4 rounded-xl mb-8 border border-green-200 font-bold flex items-center md:text-lg">
+              Message sent successfully! We will get back to you soon.
+            </div>
+          )}
+
+          {/* Error Message */}
+          {status === 'error' && (
+            <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-8 border border-red-200 flex flex-col items-start text-sm">
+              <div className="font-bold flex items-center mb-1 text-base md:text-lg">
+                Failed to send message
               </div>
-            )}
+              <span className="font-mono text-xs md:text-sm opacity-80 break-all">{errorMessage}</span>
+            </div>
+          )}
 
-            {/* Error Message */}
-            {status === 'error' && (
-              <div className="bg-red-50 text-red-700 p-4 rounded-xl mb-8 border border-red-200 flex flex-col items-start text-sm">
-                <div className="font-bold flex items-center mb-1 text-base md:text-lg">
-                  Failed to send message
-                </div>
-                <span className="font-mono text-xs md:text-sm opacity-80 break-all">{errorMessage}</span>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
-                <div>
-                  <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Your Name</label>
-                  <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="John Doe" />
-                </div>
-                <div>
-                  <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Email Address</label>
-                  <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="john@example.com" />
-                </div>
-              </div>
-
+          <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
               <div>
-                <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">What are you inquiring about?</label>
-                <select 
-                  required 
-                  value={formData.subject} 
-                  onChange={(e) => setFormData({...formData, subject: e.target.value})} 
-                  className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-all outline-none appearance-none cursor-pointer"
-                >
-                  <option value="" disabled>Select a subject...</option>
-                  <option value="Build & Invest Account">Open a Build & Invest Account</option>
-                  <option value="Bulk Order / Quotation">Bulk Material Order / Quotation</option>
-                  <option value="Delivery Inquiry">Delivery Inquiry</option>
-                  <option value="General Support">General Support</option>
-                  <option value="Other">Other</option>
-                </select>
+                <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Your Name</label>
+                <input required type="text" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="John Doe" />
               </div>
-
               <div>
-                <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Message</label>
-                <textarea required rows={6} value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none resize-y" placeholder="How can we help you today?" />
+                <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Email Address</label>
+                <input required type="email" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none" placeholder="john@example.com" />
               </div>
+            </div>
 
+            <div>
+              <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">What are you inquiring about?</label>
+              <select 
+                required 
+                value={formData.subject} 
+                onChange={(e) => setFormData({...formData, subject: e.target.value})} 
+                className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-all outline-none appearance-none cursor-pointer"
+              >
+                <option value="" disabled>Select a subject...</option>
+                <option value="Build & Invest Account">Open a Build & Invest Account</option>
+                <option value="Bulk Order / Quotation">Bulk Material Order / Quotation</option>
+                <option value="Delivery Inquiry">Delivery Inquiry</option>
+                <option value="General Support">General Support</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm md:text-base font-bold text-gray-700 mb-2">Message</label>
+              <textarea required rows={6} value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} className="w-full border border-gray-300 rounded-xl p-3.5 md:p-4 text-sm md:text-base focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none resize-y" placeholder="How can we help you today?" />
+            </div>
+
+            <div className="flex justify-center md:justify-start">
               <button type="submit" disabled={status === 'sending'} className="bg-blue-600 text-white font-black py-4 px-10 rounded-xl hover:bg-blue-700 transition-colors flex items-center justify-center shadow-lg shadow-blue-600/20 disabled:opacity-50 w-full md:w-auto text-base md:text-lg tracking-wide">
                 {status === 'sending' ? (
                   <span className="flex items-center">
@@ -156,10 +157,11 @@ export default function ContactPage() {
                   <span>Send Message</span>
                 )}
               </button>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
       </div>
+
     </div>
   );
 }
