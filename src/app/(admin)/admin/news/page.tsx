@@ -3,7 +3,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from 'firebase/firestore';
-import { Plus, Trash2, FileText, X, UploadCloud, CheckCircle, XCircle, Calendar, AlertCircle } from 'lucide-react';
+import { Plus, Trash2, FileText, X, UploadCloud, CheckCircle, XCircle, Calendar, AlertCircle, Edit2 } from 'lucide-react';
 import { CldUploadWidget } from 'next-cloudinary';
 // Strict relative path
 import { db } from '../../../../lib/firebase/client';
@@ -14,6 +14,9 @@ export default function AdminNewsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  
+  // Track if we are editing an existing post
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const initialForm = {
     title: '',
@@ -50,31 +53,58 @@ export default function AdminNewsPage() {
     }
   };
 
-  const handleAddNews = async (e: React.FormEvent) => {
+  // Unified Submit Handler (Create OR Edit)
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     if (!formData.image) return setErrorMsg('Please upload a cover image.');
     setIsSubmitting(true);
 
     try {
-      // PRO UPGRADE: Append a random 4-digit string to the slug to guarantee uniqueness!
-      const baseSlug = formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-      const uniqueSlug = `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
+      if (editingId) {
+        // UPDATE EXISTING ARTICLE
+        await updateDoc(doc(db, 'news', editingId), {
+          ...formData,
+        });
+      } else {
+        // CREATE NEW ARTICLE
+        const baseSlug = formData.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        const uniqueSlug = `${baseSlug}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-      await addDoc(collection(db, 'news'), {
-        ...formData,
-        slug: uniqueSlug,
-        createdAt: serverTimestamp(),
-      });
+        await addDoc(collection(db, 'news'), {
+          ...formData,
+          slug: uniqueSlug,
+          createdAt: serverTimestamp(),
+        });
+      }
+      
+      // Reset and close
       setIsModalOpen(false);
       setFormData(initialForm);
+      setEditingId(null);
       fetchNews();
     } catch (error) {
-      console.error('Error adding news article:', error);
-      setErrorMsg('Failed to publish article. Check connection.');
+      console.error('Error saving article:', error);
+      setErrorMsg('Failed to save article. Check connection.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Open modal in "Edit Mode"
+  const handleEdit = (item: any) => {
+    setEditingId(item.id);
+    setFormData({
+      title: item.title,
+      excerpt: item.excerpt,
+      content: item.content,
+      type: item.type,
+      eventDate: item.eventDate || '',
+      image: item.image,
+      isActive: item.isActive,
+    });
+    setErrorMsg('');
+    setIsModalOpen(true);
   };
 
   const handleToggleStatus = async (id: string, currentStatus: boolean) => {
@@ -96,6 +126,14 @@ export default function AdminNewsPage() {
     }
   };
 
+  // Open modal in "Create Mode"
+  const handleAddNew = () => {
+    setEditingId(null);
+    setFormData(initialForm);
+    setErrorMsg('');
+    setIsModalOpen(true);
+  };
+
   return (
     <div className="flex flex-col h-full relative">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
@@ -103,15 +141,13 @@ export default function AdminNewsPage() {
           <h1 className="text-2xl font-black text-gray-900">News & Events</h1>
           <p className="text-sm text-gray-500 mt-1">Publish store updates, tips, and upcoming events.</p>
         </div>
-        <button onClick={() => { setIsModalOpen(true); setErrorMsg(''); }} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm transition-colors">
+        <button onClick={handleAddNew} className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 flex items-center shadow-sm transition-colors">
           <Plus size={18} className="mr-2" /> Publish Article
         </button>
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl shadow-sm flex-1 flex flex-col">
-        {/* MOBILE RESPONSIVE WRAPPER APPLIED HERE */}
         <div className="overflow-x-auto w-full rounded-xl">
-          {/* MIN-WIDTH APPLIED HERE */}
           <table className="w-full min-w-[800px] text-left border-collapse">
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -163,9 +199,14 @@ export default function AdminNewsPage() {
                     </button>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button onClick={() => handleDelete(item.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors title='Delete Article'">
-                      <Trash2 size={18} />
-                    </button>
+                    <div className="flex justify-end gap-2">
+                      <button onClick={() => handleEdit(item)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors" title="Edit Article">
+                        <Edit2 size={18} />
+                      </button>
+                      <button onClick={() => handleDelete(item.id)} className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors" title="Delete Article">
+                        <Trash2 size={18} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -174,16 +215,16 @@ export default function AdminNewsPage() {
         </div>
       </div>
 
-      {/* Create News/Event Modal */}
+      {/* Create / Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh]">
             <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-              <h2 className="text-lg font-black text-gray-900">Publish News or Event</h2>
+              <h2 className="text-lg font-black text-gray-900">{editingId ? 'Edit Article' : 'Publish News or Event'}</h2>
               <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-900 transition-colors bg-white p-1 rounded-full border border-gray-200"><X size={20} /></button>
             </div>
 
-            <form onSubmit={handleAddNews} className="p-6 overflow-y-auto">
+            <form onSubmit={handleSubmit} className="p-6 overflow-y-auto">
 
               {errorMsg && (
                 <div className="bg-red-50 text-red-600 p-3 rounded-lg mb-6 text-sm font-bold flex items-center border border-red-100">
