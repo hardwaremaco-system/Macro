@@ -13,12 +13,13 @@ export default function AdminSettingsPage() {
   const [saving, setSaving] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Tab 1: Social & Store Links
+  // Tab 1: Social & Store Links (Added whatsapp)
   const [socialLinks, setSocialLinks] = useState({
     facebook: '',
-    twitter: '', // Acts as the X account
+    twitter: '', 
     instagram: '',
     tiktok: '',
+    whatsapp: '', 
   });
 
   // Tab 2: Team & Roles
@@ -59,7 +60,7 @@ export default function AdminSettingsPage() {
       await updateDoc(doc(db, 'settings', 'global'), {
         socials: socialLinks
       });
-      setSuccessMsg('Social links updated successfully!');
+      setSuccessMsg('Store settings updated successfully!');
       setTimeout(() => setSuccessMsg(''), 3000);
     } catch (error) {
       console.error('Error saving socials:', error);
@@ -137,7 +138,7 @@ export default function AdminSettingsPage() {
           onClick={() => setActiveTab('social')}
           className={`flex items-center px-5 py-3 text-sm font-bold border-b-2 transition-colors whitespace-nowrap ${activeTab === 'social' ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-900 hover:border-gray-300'}`}
         >
-          <LinkIcon size={16} className="mr-2" /> Social Media
+          <LinkIcon size={16} className="mr-2" /> Social Media & Contact
         </button>
         <button 
           onClick={() => setActiveTab('team')}
@@ -157,31 +158,39 @@ export default function AdminSettingsPage() {
       {activeTab === 'social' && (
         <div className="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
           <div className="p-6 border-b border-gray-100 bg-gray-50">
-            <h2 className="text-lg font-black text-gray-900">Social Media Links</h2>
-            <p className="text-sm text-gray-500 mt-1">These links will appear in your website footer.</p>
+            <h2 className="text-lg font-black text-gray-900">Contact & Social Links</h2>
+            <p className="text-sm text-gray-500 mt-1">These details will automatically update the footer and floating chat button.</p>
           </div>
           <form onSubmit={handleSaveSocials} className="p-6 space-y-5">
+            
+            {/* WhatsApp Field prominently at the top */}
+            <div className="bg-green-50 border border-green-200 p-4 rounded-xl mb-6">
+              <label className="block text-sm font-black text-green-900 mb-1">WhatsApp Chat Number</label>
+              <p className="text-xs text-green-700 mb-2">Must include country code (e.g., 256 for Uganda). Do not use the "+" symbol.</p>
+              <input type="text" value={socialLinks.whatsapp || ''} onChange={e => setSocialLinks({...socialLinks, whatsapp: e.target.value})} placeholder="256778522222" className="w-full md:w-1/2 border border-green-300 rounded-lg p-3 text-sm focus:ring-green-500 focus:border-green-500 bg-white" />
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Facebook URL</label>
-                <input type="url" value={socialLinks.facebook} onChange={e => setSocialLinks({...socialLinks, facebook: e.target.value})} placeholder="https://facebook.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                <input type="url" value={socialLinks.facebook || ''} onChange={e => setSocialLinks({...socialLinks, facebook: e.target.value})} placeholder="https://facebook.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">X (formerly Twitter) URL</label>
-                <input type="url" value={socialLinks.twitter} onChange={e => setSocialLinks({...socialLinks, twitter: e.target.value})} placeholder="https://x.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                <input type="url" value={socialLinks.twitter || ''} onChange={e => setSocialLinks({...socialLinks, twitter: e.target.value})} placeholder="https://x.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">Instagram URL</label>
-                <input type="url" value={socialLinks.instagram} onChange={e => setSocialLinks({...socialLinks, instagram: e.target.value})} placeholder="https://instagram.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                <input type="url" value={socialLinks.instagram || ''} onChange={e => setSocialLinks({...socialLinks, instagram: e.target.value})} placeholder="https://instagram.com/..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
               </div>
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-1">TikTok URL</label>
-                <input type="url" value={socialLinks.tiktok} onChange={e => setSocialLinks({...socialLinks, tiktok: e.target.value})} placeholder="https://tiktok.com/@..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
+                <input type="url" value={socialLinks.tiktok || ''} onChange={e => setSocialLinks({...socialLinks, tiktok: e.target.value})} placeholder="https://tiktok.com/@..." className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" />
               </div>
             </div>
             <div className="pt-4 border-t border-gray-100">
               <button type="submit" disabled={saving} className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-bold hover:bg-blue-700 transition-colors shadow-sm disabled:opacity-50 flex items-center">
-                <Save size={18} className="mr-2" /> {saving ? 'Saving...' : 'Save Links'}
+                <Save size={18} className="mr-2" /> {saving ? 'Saving...' : 'Save Settings'}
               </button>
             </div>
           </form>
