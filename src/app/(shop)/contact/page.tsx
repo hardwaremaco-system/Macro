@@ -2,7 +2,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { MapPin, Phone, Mail, Clock, Send, AlertCircle } from 'lucide-react';
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({ name: '', email: '', subject: '', message: '' });
@@ -43,50 +42,45 @@ export default function ContactPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center max-w-3xl mx-auto mb-16">
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-4">Contact Us</h1>
-        <p className="text-gray-600">
-          Whether you are ready to open a <strong>Build & Invest</strong> account, need a quote for a large construction project, or just have a question about a product, our team in Kabale is ready to help.
-        </p>
+      
+      {/* Page Header - Left Aligned with Bullet Points */}
+      <div className="max-w-3xl mb-12 md:mb-16 text-left">
+        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 mb-6">Welcome to the Contact Us Page</h1>
+        <ul className="list-disc pl-5 text-gray-600 space-y-2 text-lg">
+          <li>Open a Build & Invest account</li>
+          <li>Request a quote for a large construction project</li>
+          <li>Inquire about specific products or materials</li>
+          <li>Get support for existing orders and deliveries</li>
+        </ul>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
+        
         {/* Contact Information */}
         <div className="lg:col-span-1 space-y-8">
-          <div className="bg-blue-900 text-white p-8 rounded-none sm:rounded-2xl shadow-lg -mx-4 sm:mx-0">
-            <h3 className="text-xl font-black mb-6 border-b border-blue-800 pb-4">Store Details</h3>
+          {/* Changed to light gray background, added standard padding, removed edge-to-edge classes */}
+          <div className="bg-gray-100 p-5 sm:p-8 rounded-2xl border border-gray-200 shadow-sm">
+            <h3 className="text-xl font-black mb-6 border-b border-gray-300 pb-4 text-gray-900">Store Details</h3>
 
             <div className="space-y-6">
-              <div className="flex items-start">
-                <MapPin className="text-amber-500 mr-4 mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="font-bold mb-1">Our Location</h4>
-                  <p className="text-blue-200 text-sm leading-relaxed">Main Street, Kabale Town<br/>Western Region, Uganda</p>
-                </div>
+              <div>
+                <h4 className="font-bold text-gray-900 mb-1">Our Location</h4>
+                <p className="text-gray-600 text-sm leading-relaxed">Main Street, Kabale Town<br/>Western Region, Uganda</p>
               </div>
 
-              <div className="flex items-start">
-                <Phone className="text-amber-500 mr-4 mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="font-bold mb-1">Phone & WhatsApp</h4>
-                  <p className="text-blue-200 text-sm">+256 700 000 000</p>
-                </div>
+              <div>
+                <h4 className="font-bold text-gray-900 mb-1">Phone & WhatsApp</h4>
+                <p className="text-gray-600 text-sm">+256 700 000 000</p>
               </div>
 
-              <div className="flex items-start">
-                <Mail className="text-amber-500 mr-4 mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="font-bold mb-1">Email</h4>
-                  <p className="text-blue-200 text-sm">support@macrohardware.com</p>
-                </div>
+              <div>
+                <h4 className="font-bold text-gray-900 mb-1">Email</h4>
+                <p className="text-gray-600 text-sm">support@macrohardware.com</p>
               </div>
 
-              <div className="flex items-start">
-                <Clock className="text-amber-500 mr-4 mt-1 flex-shrink-0" />
-                <div>
-                  <h4 className="font-bold mb-1">Working Hours</h4>
-                  <p className="text-blue-200 text-sm">Mon - Sat: 8:00 AM - 6:00 PM<br/>Sunday: Closed</p>
-                </div>
+              <div>
+                <h4 className="font-bold text-gray-900 mb-1">Working Hours</h4>
+                <p className="text-gray-600 text-sm">Mon - Sat: 8:00 AM - 6:00 PM<br/>Sunday: Closed</p>
               </div>
             </div>
           </div>
@@ -108,10 +102,8 @@ export default function ContactPage() {
             {status === 'error' && (
               <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-6 border border-red-200 flex flex-col items-start text-sm">
                 <div className="font-bold flex items-center mb-1">
-                  <AlertCircle size={18} className="mr-2" /> 
                   Failed to send message
                 </div>
-                {/* THIS PRINTS THE EXACT REASON IT BROKE */}
                 <span className="font-mono text-xs opacity-80 break-all">{errorMessage}</span>
               </div>
             )}
@@ -157,7 +149,7 @@ export default function ContactPage() {
                     Sending...
                   </span>
                 ) : (
-                  <><Send size={18} className="mr-2" /> Send Message</>
+                  <span>Send Message</span>
                 )}
               </button>
             </form>
