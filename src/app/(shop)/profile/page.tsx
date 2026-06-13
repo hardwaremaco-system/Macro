@@ -5,7 +5,7 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signOut } from 'firebase/auth';
-import { User as UserIcon, LogOut, Package, ChevronRight, Settings, Heart } from 'lucide-react';
+
 // Strict relative paths
 import { useAuth } from '../../../context/AuthContext';
 import { auth } from '../../../lib/firebase/client';
@@ -35,6 +35,11 @@ export default function CustomerProfilePage() {
     );
   }
 
+  // Get first letter of name or email for the avatar circle
+  const initial = profile?.fullName 
+    ? profile.fullName.charAt(0).toUpperCase() 
+    : user.email?.charAt(0).toUpperCase() || 'U';
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
@@ -42,9 +47,12 @@ export default function CustomerProfilePage() {
         {/* Left Sidebar: Profile Details */}
         <div className="w-full md:w-80 flex-shrink-0">
           <div className="bg-white border border-gray-200 rounded-2xl p-8 shadow-sm mb-6 flex flex-col items-center">
-            <div className="flex items-center justify-center w-24 h-24 bg-blue-50 text-blue-600 rounded-full mb-5">
-              <UserIcon size={48} />
+            
+            {/* Initial Avatar */}
+            <div className="flex items-center justify-center w-24 h-24 bg-blue-50 text-blue-600 rounded-full mb-5 text-4xl font-black border border-blue-100">
+              {initial}
             </div>
+            
             <h2 className="text-xl font-black text-gray-900 text-center mb-1">
               {profile?.fullName || 'Valued Customer'}
             </h2>
@@ -68,7 +76,7 @@ export default function CustomerProfilePage() {
             onClick={handleLogout}
             className="w-full bg-white border border-red-200 text-red-600 py-3.5 rounded-xl font-bold hover:bg-red-50 transition-colors flex items-center justify-center shadow-sm"
           >
-            <LogOut size={18} className="mr-2" /> Sign Out
+            Sign Out
           </button>
         </div>
 
@@ -82,37 +90,11 @@ export default function CustomerProfilePage() {
               href="/orders" 
               className="flex items-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-300 hover:bg-blue-50/50 transition-all group"
             >
-              <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center mr-5 group-hover:bg-blue-600 group-hover:text-white transition-colors shrink-0">
-                <Package size={28} />
-              </div>
               <div className="flex-1">
-                <h3 className="text-lg font-black text-gray-900 mb-1">My Orders</h3>
-                <p className="text-sm text-gray-500 line-clamp-1">Track deliveries and view history</p>
+                <h3 className="text-lg font-black text-gray-900 mb-1 text-blue-600 group-hover:text-blue-800 transition-colors">My Orders</h3>
+                <p className="text-sm text-gray-500">Track deliveries and view history</p>
               </div>
-              <ChevronRight className="text-gray-400 group-hover:text-blue-600 transition-colors shrink-0" />
             </Link>
-
-            {/* Saved Items Link (Placeholder for future functionality) */}
-            <div className="flex items-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm opacity-60 cursor-not-allowed">
-              <div className="w-14 h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center mr-5 shrink-0">
-                <Heart size={28} />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-black text-gray-900 mb-1">Saved Items</h3>
-                <p className="text-sm text-gray-500 line-clamp-1">Coming soon</p>
-              </div>
-            </div>
-
-            {/* Settings Link (Placeholder for future functionality) */}
-            <div className="flex items-center p-6 bg-white border border-gray-200 rounded-2xl shadow-sm opacity-60 cursor-not-allowed sm:col-span-2">
-              <div className="w-14 h-14 bg-gray-50 text-gray-400 rounded-xl flex items-center justify-center mr-5 shrink-0">
-                <Settings size={28} />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-black text-gray-900 mb-1">Account Settings</h3>
-                <p className="text-sm text-gray-500 line-clamp-1">Update password and personal details (Coming soon)</p>
-              </div>
-            </div>
           </div>
         </div>
 
