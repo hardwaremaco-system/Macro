@@ -55,7 +55,7 @@ export default function Header() {
 
             {/* Right: User, Cart & Mobile Hamburger */}
             <div className="flex items-center space-x-6 md:space-x-8 text-gray-900">
-              
+
               {/* Account / Login (Desktop) */}
               <Link 
                 href={user ? "/profile" : "/login"} 
@@ -99,7 +99,7 @@ export default function Header() {
           <div className="max-w-7xl mx-auto px-6 lg:px-8 h-12 flex items-center justify-between">
 
             <div className="flex items-center gap-8 h-full">
-              
+
               {/* "Categories" Click Dropdown (Modernized) */}
               <div className="relative h-full flex items-center">
                 <button 
@@ -139,7 +139,7 @@ export default function Header() {
                 {user && (
                   <Link href="/orders" className="hover:text-white transition-colors">Orders</Link>
                 )}
-                
+
                 {/* "More" Dropdown for secondary links */}
                 <div className="relative h-full flex items-center group">
                   <button 
@@ -151,7 +151,7 @@ export default function Header() {
                   >
                     More <ChevronDown size={16} className={`transition-transform ${isMoreOpen ? 'rotate-180' : ''}`} />
                   </button>
-                  
+
                   {/* Dropdown */}
                   <div 
                     className={`absolute top-full left-0 w-48 bg-white border border-gray-200 shadow-xl rounded-b-xl z-50 flex flex-col py-2 transition-all duration-200 origin-top ${
@@ -165,8 +165,8 @@ export default function Header() {
                   </div>
                 </div>
 
-                {/* Admin Link Check */}
-                {profile?.role === 'admin' && (
+                {/* Admin Link Check - Updated to include Editor role */}
+                {(profile?.role === 'admin' || profile?.role === 'editor') && (
                   <Link href="/admin" className="text-amber-400 hover:text-amber-300 transition-colors">Admin</Link>
                 )}
               </nav>
@@ -244,8 +244,8 @@ export default function Header() {
             Contact Us
           </Link>
 
-          {/* Mobile Admin Link */}
-          {profile?.role === 'admin' && (
+          {/* Mobile Admin Link - Updated to include Editor role */}
+          {(profile?.role === 'admin' || profile?.role === 'editor') && (
             <Link href="/admin" onClick={closeMenu} className="py-4 text-sm font-black text-amber-600 border-b border-gray-50 hover:text-amber-500 transition-colors uppercase tracking-wider">
               Admin Panel
             </Link>
