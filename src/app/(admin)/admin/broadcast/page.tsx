@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { collection, getDocs, addDoc } from 'firebase/firestore';
+import { collection, getDocs } from 'firebase/firestore';
 import { Send, UploadCloud, X, Mail, AlertCircle, CheckCircle } from 'lucide-react';
 import { CldUploadWidget } from 'next-cloudinary';
 // Strict relative path
@@ -32,12 +32,13 @@ export default function BroadcastPage() {
     setSuccessMsg('');
 
     try {
-      // 1. Fetch all registered users to get their emails
+      // 1. Fetch all registered users from Firebase to get their emails
       const usersSnap = await getDocs(collection(db, 'users'));
       const emails: string[] = [];
       
       usersSnap.forEach((doc) => {
         const email = doc.data().email;
+        // Basic validation to ensure it's an email address
         if (email && email.includes('@')) {
           emails.push(email);
         }
@@ -77,23 +78,31 @@ export default function BroadcastPage() {
         </div>
       `;
 
-      // 3. Chunk emails into groups of 50 to avoid SMTP BCC limits and spam filters
+      // 3. Chunk emails into groups of 50 to respect Brevo's BCC limits
       const chunkSize = 50;
       for (let i = 0; i < emails.length; i += chunkSize) {
         const bccChunk = emails.slice(i, i + chunkSize);
 
-        // 4. Write to the 'mail' collection (Firebase Trigger Email Extension reads this)
-        await addDoc(collection(db, 'mail'), {
-          to: ['noreply@macrohardwarekabale.com'], // Primary TO address (can be your own)
-          bcc: bccChunk,                           // BCC hides emails from each other
-          message: {
-            subject: formData.subject,
-            html: htmlContent,
+        // 4. Send the chunk to our custom Next.js API Route!
+        const res = await fetch('/api/email/broadcast', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
           },
+          body: JSON.stringify({
+            subject: formData.subject,
+            htmlContent: htmlContent,
+            bccList: bccChunk,
+          }),
         });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          throw new Error(errData.error || 'Failed to send a batch to Brevo.');
+        }
       }
 
-      setSuccessMsg(`Successfully queued broadcast to ${emails.length} customers!`);
+      setSuccessMsg(`Successfully broadcasted to ${emails.length} customers via Brevo!`);
       setFormData({ subject: '', message: '', image: '', buttonText: '', buttonLink: '' });
 
     } catch (error: any) {
@@ -109,7 +118,7 @@ export default function BroadcastPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-gray-900">Email Broadcaster</h1>
-          <p className="text-sm text-gray-500 mt-1">Send updates, offers, and news to all registered customers.</p>
+          <p className="text-sm text-gray-500 mt-1">Send updates, offers, and news directly via Brevo.</p>
         </div>
         <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
           <Mail size={24} />
@@ -140,8 +149,6 @@ export default function BroadcastPage() {
           {/* Banner Image */}
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Banner Image (Optional)</label>
-            
-            {/* 1. Preview Section - Shows when image exists */}
             {formData.image && (
               <div className="relative w-full max-w-md h-48 rounded-xl overflow-hidden border-2 border-blue-500 shadow-sm group mb-4">
                 <img src={formData.image} alt="Preview" className="w-full h-full object-cover" />
@@ -154,18 +161,14 @@ export default function BroadcastPage() {
                 </button>
               </div>
             )}
-
-            {/* 2. Upload Widget - We hide it using CSS instead of unmounting it so it can clean up its scroll locks */}
             <div className={formData.image ? 'hidden' : 'block'}>
               <CldUploadWidget 
                 signatureEndpoint="/api/cloudinary/sign"
                 onSuccess={(result: any) => {
                   setFormData({ ...formData, image: result.info.secure_url });
-                  // Failsafe: Forcefully remove the scroll lock that Cloudinary adds
                   document.body.style.overflow = 'unset';
                 }}
                 onClose={() => {
-                  // Failsafe: Forcefully remove the scroll lock if they just close the modal
                   document.body.style.overflow = 'unset';
                 }}
               >
@@ -204,7 +207,7 @@ export default function BroadcastPage() {
           <div className="pt-4 border-t border-gray-200 flex justify-end">
             <button type="submit" disabled={loading} className="bg-blue-600 text-white px-8 py-3 rounded-lg font-black hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 flex items-center">
               {loading ? (
-                <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div> Sending...</>
+                <><div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div> Sending via Brevo...</>
               ) : (
                 <><Send size={18} className="mr-2" /> Broadcast to All Customers</>
               )}
