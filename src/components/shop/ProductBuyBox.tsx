@@ -11,17 +11,18 @@ export default function ProductBuyBox({ product }: { product: any }) {
 
   const currentStock = product.stock !== undefined ? product.stock : 99;
 
-  // Handle manual input changes
+  // Handle manual input changes for quantity
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value);
-    // If empty input, set to 1. Otherwise, clamp between 1 and currentStock
-    if (isNaN(value)) {
+    if (isNaN(value) || value < 1) {
       setQuantity(1);
     } else {
-      setQuantity(Math.min(currentStock, Math.max(1, value)));
+      // Clamp the value between 1 and the available stock
+      setQuantity(Math.min(currentStock, value));
     }
   };
 
+  // Handle the 3-second auto-close timer
   useEffect(() => {
     let timer: NodeJS.Timeout;
     if (showPopup) {
@@ -29,6 +30,7 @@ export default function ProductBuyBox({ product }: { product: any }) {
         setShowPopup(false);
       }, 3000);
     }
+    // Cleanup the timer if the component unmounts or popup closes early
     return () => clearTimeout(timer);
   }, [showPopup]);
 
@@ -40,15 +42,20 @@ export default function ProductBuyBox({ product }: { product: any }) {
       image: product.image,
       stock: product.stock,
     }, quantity);
+
+    // Trigger the custom popup
     setShowPopup(true);
   };
 
   return (
     <div className="flex flex-col justify-center pt-2 sm:pt-0 relative">
+
+      {/* Product Title */}
       <h1 className="text-6xl sm:text-7xl lg:text-8xl font-black text-gray-500 leading-none mb-6 tracking-tighter">
         {product.title}
       </h1>
 
+      {/* Price */}
       <div className="flex items-end gap-3 mb-8">
         <span className="text-3xl sm:text-4xl lg:text-5xl font-black text-slate-900 tracking-tight">
           UGX {Number(product.price).toLocaleString()}
@@ -60,8 +67,9 @@ export default function ProductBuyBox({ product }: { product: any }) {
         )}
       </div>
 
+      {/* Inline Quantity and Add to Cart Button */}
       <div className="flex items-center gap-3">
-        {/* Updated Quantity Selector */}
+        {/* Quantity Selector with Typing Support */}
         <div className="flex items-center border border-gray-300 rounded-sm bg-white h-14 w-32 shrink-0">
           <button 
             onClick={() => setQuantity(Math.max(1, quantity - 1))}
@@ -71,7 +79,6 @@ export default function ProductBuyBox({ product }: { product: any }) {
             -
           </button>
           
-          {/* Input field for manual typing */}
           <input 
             type="number"
             value={quantity}
@@ -88,6 +95,7 @@ export default function ProductBuyBox({ product }: { product: any }) {
           </button>
         </div>
 
+        {/* Square Dark Add to Cart Button */}
         <button 
           onClick={handleAddToCart}
           disabled={currentStock <= 0}
@@ -97,22 +105,43 @@ export default function ProductBuyBox({ product }: { product: any }) {
         </button>
       </div>
 
-      {/* Popup remains the same */}
+      {/* Custom Auto-Closing Popup */}
       {showPopup && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 sm:bottom-auto sm:top-24 sm:right-8 sm:left-auto sm:translate-x-0 z-50 w-[90%] max-w-sm bg-white border border-gray-200 shadow-2xl rounded-lg p-5 transition-all duration-300 ease-out">
+
           <div className="flex justify-between items-start mb-3">
             <div className="flex items-center text-green-600 font-bold text-sm uppercase tracking-wide">
               <span className="text-lg mr-2">✓</span> Added to Cart
             </div>
-            <button onClick={() => setShowPopup(false)} className="text-gray-400 hover:text-gray-800 transition-colors">✕</button>
+            <button 
+              onClick={() => setShowPopup(false)}
+              className="text-gray-400 hover:text-gray-800 transition-colors"
+            >
+              ✕
+            </button>
           </div>
-          <p className="text-gray-800 font-medium text-base mb-5 line-clamp-1">{quantity}x {product.title}</p>
+
+          <p className="text-gray-800 font-medium text-base mb-5 line-clamp-1">
+            {quantity}x {product.title}
+          </p>
+
           <div className="flex items-center gap-3">
-            <Link href="/cart" className="flex-1 bg-yellow-500 text-slate-900 text-center py-2.5 rounded-sm text-sm font-bold hover:bg-yellow-400 transition-colors">View Cart</Link>
-            <button onClick={() => setShowPopup(false)} className="flex-1 bg-gray-100 text-gray-800 py-2.5 rounded-sm text-sm font-bold hover:bg-gray-200 transition-colors">Continue</button>
+            <Link 
+              href="/cart"
+              className="flex-1 bg-yellow-500 text-slate-900 text-center py-2.5 rounded-sm text-sm font-bold hover:bg-yellow-400 transition-colors"
+            >
+              View Cart
+            </Link>
+            <button 
+              onClick={() => setShowPopup(false)}
+              className="flex-1 bg-gray-100 text-gray-800 py-2.5 rounded-sm text-sm font-bold hover:bg-gray-200 transition-colors"
+            >
+              Continue
+            </button>
           </div>
         </div>
       )}
+
     </div>
   );
 }
