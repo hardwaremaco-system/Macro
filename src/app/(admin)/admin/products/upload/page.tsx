@@ -4,8 +4,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ArrowLeft, UploadCloud, CheckCircle, X, Star } from 'lucide-react';
-import { CldUploadWidget } from 'next-cloudinary';
+import { ArrowLeft, UploadCloud, CheckCircle, X, Star, Loader2 } from 'lucide-react';
 // Strict relative paths
 import { db } from '../../../../../lib/firebase/client';
 import { STORE_CATEGORIES } from '../../../../../lib/categories';
@@ -14,11 +13,12 @@ export default function UploadProductPage() {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
   // Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(STORE_CATEGORIES[0].name);
-  const [unit, setUnit] = useState(''); // New Unit/Size state
+  const [unit, setUnit] = useState(''); 
   const [price, setPrice] = useState('');
   const [originalPrice, setOriginalPrice] = useState('');
   const [stock, setStock] = useState('99');
@@ -27,6 +27,60 @@ export default function UploadProductPage() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPromo, setIsPromo] = useState(false);
 
+  // --- NATIVE IMAGE UPLOADER ---
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setUploadingImages(true);
+    const uploadedUrls: string[] = [];
+
+    try {
+      for (const file of files) {
+        // Fetch secure signature for each file
+        const signResponse = await fetch('/api/cloudinary/sign', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ folder: 'macro_hardware/products' }),
+        });
+
+        if (!signResponse.ok) throw new Error('Signature generation failed');
+        const { signature, timestamp, folder, cloudName, apiKey } = await signResponse.json();
+
+        // Direct Upload to Cloudinary API
+        const uploadData = new FormData();
+        uploadData.append('file', file);
+        uploadData.append('api_key', apiKey);
+        uploadData.append('timestamp', timestamp.toString());
+        uploadData.append('signature', signature);
+        uploadData.append('folder', folder);
+
+        const uploadRes = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+          method: 'POST',
+          body: uploadData,
+        });
+
+        const data = await uploadRes.json();
+        if (data.secure_url) {
+          uploadedUrls.push(data.secure_url);
+        }
+      }
+
+      // Append new images to the existing array
+      setImages(prev => [...prev, ...uploadedUrls]);
+    } catch (error: any) {
+      console.error('Image upload failed:', error);
+      alert(`Upload failed: ${error.message}`);
+    } finally {
+      setUploadingImages(false);
+    }
+  };
+
+  const removeImage = (indexToRemove: number) => {
+    setImages(images.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  // --- PUBLISH PRODUCT TO STORE ---
   const handleUploadProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (images.length === 0) return alert('Please upload at least one product image.');
@@ -38,7 +92,7 @@ export default function UploadProductPage() {
       const productData = {
         title,
         category,
-        unit: unit || '1 Unit', // Safely defaults to '1 Unit' if left blank
+        unit: unit || '1 Unit', 
         price: Number(price),
         originalPrice: originalPrice ? Number(originalPrice) : null,
         stock: Number(stock),
@@ -49,13 +103,13 @@ export default function UploadProductPage() {
         isPromo,
       };
 
-      // 1. Save to Firestore First
+      // 1. Save to Firestore
       const docRef = await addDoc(collection(db, 'products'), {
         ...productData,
         createdAt: serverTimestamp(),
       });
 
-      // 2. Immediately Sync to Algolia via our Secure API
+      // 2. Sync to Algolia
       try {
         await fetch('/api/algolia/sync', {
           method: 'POST',
@@ -81,10 +135,6 @@ export default function UploadProductPage() {
     }
   };
 
-  const removeImage = (indexToRemove: number) => {
-    setImages(images.filter((_, idx) => idx !== indexToRemove));
-  };
-
   return (
     <div className="max-w-4xl mx-auto pb-12">
       {/* Header */}
@@ -107,7 +157,7 @@ export default function UploadProductPage() {
       {/* Main Upload Form */}
       <form onSubmit={handleUploadProduct} className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-8">
 
-        {/* Row 1: Multi-Image Upload Gallery */}
+        {/* Row 1: Native Multi-Image Uploader */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-3">Product Images (First image becomes the main thumbnail) *</label>
           <div className="flex flex-wrap gap-4 items-start">
@@ -131,23 +181,27 @@ export default function UploadProductPage() {
               </div>
             ))}
 
-            {/* Upload Widget Trigger */}
-            <CldUploadWidget 
-              signatureEndpoint="/api/cloudinary/sign"
-              onSuccess={(result: any) => setImages(prev => [...prev, result.info.secure_url])}
-              options={{ 
-                multiple: true, 
-                maxFiles: 5,
-                sources: ['local'] // This hides Drive/Dropbox and forces the local file picker
-              }}
-            >
-              {({ open }) => (
-                <button type="button" onClick={() => open()} className="w-32 h-32 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
-                  <UploadCloud size={24} className="mb-2" />
-                  <span className="font-bold text-sm">Add Photos</span>
-                </button>
-              )}
-            </CldUploadWidget>
+            {/* Native Upload Input */}
+            {images.length < 5 && (
+              <label className={`w-32 h-32 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0 ${uploadingImages ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}>
+                {uploadingImages ? (
+                  <Loader2 className="h-6 w-6 animate-spin mb-2 text-blue-600" />
+                ) : (
+                  <>
+                    <UploadCloud size={24} className="mb-2" />
+                    <span className="font-bold text-sm">Add Photos</span>
+                  </>
+                )}
+                <input 
+                  type="file" 
+                  multiple 
+                  accept="image/*" 
+                  className="hidden" 
+                  onChange={handleImageUpload} 
+                  disabled={uploadingImages} 
+                />
+              </label>
+            )}
           </div>
         </div>
 
@@ -214,10 +268,10 @@ export default function UploadProductPage() {
 
         {/* Submit Action */}
         <div className="pt-6 border-t border-gray-100">
-          <button type="submit" disabled={isSubmitting || success} className="w-full bg-blue-600 text-white py-4 rounded-xl font-black hover:bg-blue-700 transition-colors disabled:opacity-50 text-lg shadow-md flex items-center justify-center">
+          <button type="submit" disabled={isSubmitting || success || uploadingImages} className="w-full bg-blue-600 text-white py-4 rounded-xl font-black hover:bg-blue-700 transition-colors disabled:opacity-50 text-lg shadow-md flex items-center justify-center">
             {isSubmitting ? (
               <span className="flex items-center">
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-3"></div>
+                <Loader2 className="animate-spin h-5 w-5 mr-3" />
                 Publishing to Store...
               </span>
             ) : (
