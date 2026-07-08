@@ -111,12 +111,12 @@ export default function UploadProductPage() {
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-3">Product Images (First image becomes the main thumbnail) *</label>
           <div className="flex flex-wrap gap-4 items-start">
-            
+
             {/* Render Uploaded Images */}
             {images.map((img, idx) => (
               <div key={idx} className={`relative w-32 h-32 rounded-xl border-2 overflow-hidden bg-gray-50 group ${idx === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
                 <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
-                
+
                 {/* Main Image Badge */}
                 {idx === 0 && (
                   <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-[10px] font-black uppercase text-center py-1 flex items-center justify-center">
@@ -135,7 +135,11 @@ export default function UploadProductPage() {
             <CldUploadWidget 
               signatureEndpoint="/api/cloudinary/sign"
               onSuccess={(result: any) => setImages(prev => [...prev, result.info.secure_url])}
-              options={{ multiple: true, maxFiles: 5 }}
+              options={{ 
+                multiple: true, 
+                maxFiles: 5,
+                sources: ['local'] // This hides Drive/Dropbox and forces the local file picker
+              }}
             >
               {({ open }) => (
                 <button type="button" onClick={() => open()} className="w-32 h-32 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0">
