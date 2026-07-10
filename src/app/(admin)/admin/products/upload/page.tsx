@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { ArrowLeft, UploadCloud, CheckCircle, X, Star, Loader2 } from 'lucide-react';
+import imageCompression from 'browser-image-compression';
 // Strict relative paths
 import { db } from '../../../../../lib/firebase/client';
 import { STORE_CATEGORIES } from '../../../../../lib/categories';
@@ -27,7 +28,7 @@ export default function UploadProductPage() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPromo, setIsPromo] = useState(false);
 
-  // --- NATIVE IMAGE UPLOADER ---
+  // --- NATIVE IMAGE UPLOADER WITH COMPRESSION ---
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) return;
@@ -35,9 +36,23 @@ export default function UploadProductPage() {
     setUploadingImages(true);
     const uploadedUrls: string[] = [];
 
+    // Compression Settings
+    const compressionOptions = {
+      maxSizeMB: 1,            // Compress to maximum 1MB
+      maxWidthOrHeight: 1920,  // Resize ultra-huge camera photos down to 1920px max
+      useWebWorker: true,      // Keeps the UI from freezing during compression
+      fileType: 'image/webp'   // Converts heavy PNGs/JPGs to modern WebP format
+    };
+
     try {
       for (const file of files) {
-        // Fetch secure signature for each file
+        
+        // 1. Compress the image before doing anything else
+        console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
+        const compressedFile = await imageCompression(file, compressionOptions);
+        console.log(`Compressed size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
+
+        // 2. Fetch secure signature for each file
         const signResponse = await fetch('/api/cloudinary/sign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -47,9 +62,9 @@ export default function UploadProductPage() {
         if (!signResponse.ok) throw new Error('Signature generation failed');
         const { signature, timestamp, folder, cloudName, apiKey } = await signResponse.json();
 
-        // Direct Upload to Cloudinary API
+        // 3. Direct Upload to Cloudinary API (Using the COMPRESSED file)
         const uploadData = new FormData();
-        uploadData.append('file', file);
+        uploadData.append('file', compressedFile); // <-- Uploading the small file!
         uploadData.append('api_key', apiKey);
         uploadData.append('timestamp', timestamp.toString());
         uploadData.append('signature', signature);
