@@ -27,6 +27,7 @@ export default function UploadProductPage() {
   // Core Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(STORE_CATEGORIES[0].name);
+  const [unit, setUnit] = useState(''); // Base Unit
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isFeatured, setIsFeatured] = useState(false);
@@ -37,7 +38,7 @@ export default function UploadProductPage() {
   const [originalPrice, setOriginalPrice] = useState('');
   const [stock, setStock] = useState('99');
 
-  // --- NEW: VARIATIONS STATE ---
+  // --- VARIATIONS STATE ---
   const [hasVariations, setHasVariations] = useState(false);
   const [optionName, setOptionName] = useState(''); // e.g., Size, Colour, Capacity
   const [variations, setVariations] = useState<Variation[]>([
@@ -122,7 +123,7 @@ export default function UploadProductPage() {
     let finalPrice = 0;
     let finalStock = 0;
     let finalOriginalPrice = null;
-    let cleanVariations = [];
+    let cleanVariations: any[] = [];
 
     // Validation & Math Logic for Variations
     if (hasVariations) {
@@ -160,9 +161,10 @@ export default function UploadProductPage() {
       const productData = {
         title,
         category,
-        price: finalPrice, // Automatically the cheapest variation if applicable
+        unit: unit || '1 Unit', // Safely defaults if left blank
+        price: finalPrice, 
         originalPrice: finalOriginalPrice,
-        stock: finalStock, // Total aggregate stock
+        stock: finalStock, 
         description,
         image: images[0],
         images: images, 
@@ -254,7 +256,7 @@ export default function UploadProductPage() {
         </div>
 
         {/* --- ROW 2: BASIC INFO --- */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Product Title *</label>
             <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Tororo Cement" />
@@ -266,6 +268,10 @@ export default function UploadProductPage() {
                 <option key={cat.slug} value={cat.name}>{cat.name}</option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="block text-sm font-bold text-gray-700 mb-2">Base Unit / Sold By</label>
+            <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 1 Kg, Per Piece, Bucket" />
           </div>
         </div>
 
