@@ -4,11 +4,19 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { ArrowLeft, UploadCloud, CheckCircle, X, Star, Loader2 } from 'lucide-react';
+import { ArrowLeft, UploadCloud, CheckCircle, X, Star, Loader2, Plus, Trash2 } from 'lucide-react';
 import imageCompression from 'browser-image-compression';
 // Strict relative paths
 import { db } from '../../../../../lib/firebase/client';
 import { STORE_CATEGORIES } from '../../../../../lib/categories';
+
+// Helper type for variations
+interface Variation {
+  id: string; // Used locally for React keys
+  value: string;
+  price: string;
+  stock: string;
+}
 
 export default function UploadProductPage() {
   const router = useRouter();
@@ -16,17 +24,37 @@ export default function UploadProductPage() {
   const [success, setSuccess] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
 
-  // Form State
+  // Core Form State
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState(STORE_CATEGORIES[0].name);
-  const [unit, setUnit] = useState(''); 
-  const [price, setPrice] = useState('');
-  const [originalPrice, setOriginalPrice] = useState('');
-  const [stock, setStock] = useState('99');
   const [description, setDescription] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPromo, setIsPromo] = useState(false);
+
+  // Standard Pricing (If NO Variations)
+  const [price, setPrice] = useState('');
+  const [originalPrice, setOriginalPrice] = useState('');
+  const [stock, setStock] = useState('99');
+
+  // --- NEW: VARIATIONS STATE ---
+  const [hasVariations, setHasVariations] = useState(false);
+  const [optionName, setOptionName] = useState(''); // e.g., Size, Colour, Capacity
+  const [variations, setVariations] = useState<Variation[]>([
+    { id: '1', value: '', price: '', stock: '' }
+  ]);
+
+  const handleAddVariationRow = () => {
+    setVariations([...variations, { id: Date.now().toString(), value: '', price: '', stock: '' }]);
+  };
+
+  const handleRemoveVariationRow = (idToRemove: string) => {
+    setVariations(variations.filter(v => v.id !== idToRemove));
+  };
+
+  const handleVariationChange = (id: string, field: keyof Variation, newValue: string) => {
+    setVariations(variations.map(v => v.id === id ? { ...v, [field]: newValue } : v));
+  };
 
   // --- NATIVE IMAGE UPLOADER WITH COMPRESSION ---
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,23 +64,17 @@ export default function UploadProductPage() {
     setUploadingImages(true);
     const uploadedUrls: string[] = [];
 
-    // Compression Settings
     const compressionOptions = {
-      maxSizeMB: 1,            // Compress to maximum 1MB
-      maxWidthOrHeight: 1920,  // Resize ultra-huge camera photos down to 1920px max
-      useWebWorker: true,      // Keeps the UI from freezing during compression
-      fileType: 'image/webp'   // Converts heavy PNGs/JPGs to modern WebP format
+      maxSizeMB: 1,
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+      fileType: 'image/webp'
     };
 
     try {
       for (const file of files) {
-        
-        // 1. Compress the image before doing anything else
-        console.log(`Original size: ${(file.size / 1024 / 1024).toFixed(2)} MB`);
         const compressedFile = await imageCompression(file, compressionOptions);
-        console.log(`Compressed size: ${(compressedFile.size / 1024 / 1024).toFixed(2)} MB`);
-
-        // 2. Fetch secure signature for each file
+        
         const signResponse = await fetch('/api/cloudinary/sign', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -62,9 +84,8 @@ export default function UploadProductPage() {
         if (!signResponse.ok) throw new Error('Signature generation failed');
         const { signature, timestamp, folder, cloudName, apiKey } = await signResponse.json();
 
-        // 3. Direct Upload to Cloudinary API (Using the COMPRESSED file)
         const uploadData = new FormData();
-        uploadData.append('file', compressedFile); // <-- Uploading the small file!
+        uploadData.append('file', compressedFile);
         uploadData.append('api_key', apiKey);
         uploadData.append('timestamp', timestamp.toString());
         uploadData.append('signature', signature);
@@ -80,8 +101,6 @@ export default function UploadProductPage() {
           uploadedUrls.push(data.secure_url);
         }
       }
-
-      // Append new images to the existing array
       setImages(prev => [...prev, ...uploadedUrls]);
     } catch (error: any) {
       console.error('Image upload failed:', error);
@@ -100,22 +119,60 @@ export default function UploadProductPage() {
     e.preventDefault();
     if (images.length === 0) return alert('Please upload at least one product image.');
 
+    let finalPrice = 0;
+    let finalStock = 0;
+    let finalOriginalPrice = null;
+    let cleanVariations = [];
+
+    // Validation & Math Logic for Variations
+    if (hasVariations) {
+      if (!optionName.trim()) return alert("Please provide an Option Name (e.g., Size, Diameter).");
+      if (variations.length === 0) return alert("Please add at least one variation row.");
+      
+      let minPrice = Infinity;
+      let totalStock = 0;
+
+      for (const v of variations) {
+        if (!v.value || !v.price || !v.stock) {
+          return alert("Please fill out all fields for every variation.");
+        }
+        const vPrice = Number(v.price);
+        const vStock = Number(v.stock);
+        
+        if (vPrice < minPrice) minPrice = vPrice;
+        totalStock += vStock;
+        
+        // Strip out the React 'id' before saving to database
+        cleanVariations.push({ value: v.value, price: vPrice, stock: vStock });
+      }
+
+      finalPrice = minPrice; // Used for "From UGX..." sorting
+      finalStock = totalStock;
+    } else {
+      // Standard Product Logic
+      finalPrice = Number(price);
+      finalStock = Number(stock);
+      finalOriginalPrice = originalPrice ? Number(originalPrice) : null;
+    }
+
     setIsSubmitting(true);
     try {
-      const mainImage = images[0]; 
-
       const productData = {
         title,
         category,
-        unit: unit || '1 Unit', 
-        price: Number(price),
-        originalPrice: originalPrice ? Number(originalPrice) : null,
-        stock: Number(stock),
+        price: finalPrice, // Automatically the cheapest variation if applicable
+        originalPrice: finalOriginalPrice,
+        stock: finalStock, // Total aggregate stock
         description,
-        image: mainImage,
+        image: images[0],
         images: images, 
         isFeatured,
         isPromo,
+        hasVariations,
+        ...(hasVariations && {
+          optionName: optionName.trim(),
+          variations: cleanVariations
+        })
       };
 
       // 1. Save to Firestore
@@ -135,7 +192,7 @@ export default function UploadProductPage() {
           }),
         });
       } catch (algoliaError) {
-        console.error('Product saved to Firestore, but Algolia sync failed:', algoliaError);
+        console.error('Algolia sync failed:', algoliaError);
       }
 
       setSuccess(true);
@@ -145,14 +202,13 @@ export default function UploadProductPage() {
 
     } catch (error) {
       console.error('Error uploading product:', error);
-      alert('Failed to upload product. Check console.');
+      alert('Failed to upload product.');
       setIsSubmitting(false);
     }
   };
 
   return (
     <div className="max-w-4xl mx-auto pb-12">
-      {/* Header */}
       <div className="flex items-center mb-8">
         <button onClick={() => router.back()} className="mr-4 p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors">
           <ArrowLeft size={20} />
@@ -169,59 +225,36 @@ export default function UploadProductPage() {
         </div>
       )}
 
-      {/* Main Upload Form */}
       <form onSubmit={handleUploadProduct} className="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 space-y-8">
 
-        {/* Row 1: Native Multi-Image Uploader */}
+        {/* --- ROW 1: IMAGES --- */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-3">Product Images (First image becomes the main thumbnail) *</label>
           <div className="flex flex-wrap gap-4 items-start">
-
-            {/* Render Uploaded Images */}
             {images.map((img, idx) => (
               <div key={idx} className={`relative w-32 h-32 rounded-xl border-2 overflow-hidden bg-gray-50 group ${idx === 0 ? 'border-blue-500' : 'border-gray-200'}`}>
                 <img src={img} alt={`Preview ${idx}`} className="w-full h-full object-cover" />
-
-                {/* Main Image Badge */}
                 {idx === 0 && (
                   <div className="absolute bottom-0 left-0 right-0 bg-blue-500 text-white text-[10px] font-black uppercase text-center py-1 flex items-center justify-center">
                     <Star size={10} className="mr-1" /> Main Image
                   </div>
                 )}
-
-                {/* Remove Button */}
                 <button type="button" onClick={() => removeImage(idx)} className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md hover:bg-red-600">
                   <X size={14} />
                 </button>
               </div>
             ))}
-
-            {/* Native Upload Input */}
             {images.length < 5 && (
               <label className={`w-32 h-32 border-2 border-dashed border-blue-300 bg-blue-50 rounded-xl flex flex-col items-center justify-center text-blue-600 hover:bg-blue-100 transition-colors shrink-0 ${uploadingImages ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}>
-                {uploadingImages ? (
-                  <Loader2 className="h-6 w-6 animate-spin mb-2 text-blue-600" />
-                ) : (
-                  <>
-                    <UploadCloud size={24} className="mb-2" />
-                    <span className="font-bold text-sm">Add Photos</span>
-                  </>
-                )}
-                <input 
-                  type="file" 
-                  multiple 
-                  accept="image/*" 
-                  className="hidden" 
-                  onChange={handleImageUpload} 
-                  disabled={uploadingImages} 
-                />
+                {uploadingImages ? <Loader2 className="h-6 w-6 animate-spin mb-2 text-blue-600" /> : <><UploadCloud size={24} className="mb-2" /><span className="font-bold text-sm">Add Photos</span></>}
+                <input type="file" multiple accept="image/*" className="hidden" onChange={handleImageUpload} disabled={uploadingImages} />
               </label>
             )}
           </div>
         </div>
 
-        {/* Row 2: Title, Category, & Unit */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* --- ROW 2: BASIC INFO --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Product Title *</label>
             <input required type="text" value={title} onChange={(e) => setTitle(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. Tororo Cement" />
@@ -234,36 +267,98 @@ export default function UploadProductPage() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Unit / Size</label>
-            <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 50kg, 1L, Pack of 12" />
-          </div>
         </div>
 
-        {/* Row 3: Pricing & Inventory */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Selling Price (UGX) *</label>
-            <input required type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="32000" />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Original Price (Optional)</label>
-            <input type="number" min="0" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 35000 (Crossed out)" />
-          </div>
-          <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Available Stock *</label>
-            <input required type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="99" />
-          </div>
-        </div>
-
-        {/* Row 4: Description */}
         <div>
           <label className="block text-sm font-bold text-gray-700 mb-2">Product Description</label>
           <textarea rows={4} value={description} onChange={(e) => setDescription(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="Detail the specifications, grade, or best use cases..." />
         </div>
 
-        {/* Row 5: Store Settings Toggles */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* --- ROW 3: VARIATIONS TOGGLE & BUILDER --- */}
+        <div className="border-t border-gray-200 pt-8 pb-4">
+          <label className="flex items-center cursor-pointer mb-6 group">
+            <input 
+              type="checkbox" 
+              checked={hasVariations} 
+              onChange={(e) => setHasVariations(e.target.checked)} 
+              className="w-5 h-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            />
+            <span className="ml-3 text-lg font-black text-gray-900 group-hover:text-blue-600 transition-colors">
+              ☑ This product has variations
+            </span>
+          </label>
+
+          {hasVariations ? (
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6">
+              <div className="mb-6 w-full md:w-1/2">
+                <label className="block text-sm font-bold text-slate-800 mb-2">Option Name *</label>
+                <input 
+                  type="text" 
+                  value={optionName} 
+                  onChange={(e) => setOptionName(e.target.value)} 
+                  className="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white" 
+                  placeholder="e.g. Size, Diameter, Colour, Length" 
+                />
+                <p className="text-xs text-slate-500 mt-2 font-medium">This will show as "Choose {optionName || '...'}" on the product page.</p>
+              </div>
+
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="border-b-2 border-slate-200 text-xs font-black text-slate-600 uppercase">
+                      <th className="pb-3 pr-4">Value (e.g. 1 inch)</th>
+                      <th className="pb-3 pr-4">Price (UGX)</th>
+                      <th className="pb-3 pr-4">Stock</th>
+                      <th className="pb-3 w-10"></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {variations.map((v) => (
+                      <tr key={v.id} className="border-b border-slate-100 last:border-0">
+                        <td className="py-3 pr-4">
+                          <input type="text" value={v.value} onChange={(e) => handleVariationChange(v.id, 'value', e.target.value)} className="w-full border border-slate-300 rounded-md p-2 text-sm bg-white" placeholder="Value" />
+                        </td>
+                        <td className="py-3 pr-4">
+                          <input type="number" min="0" value={v.price} onChange={(e) => handleVariationChange(v.id, 'price', e.target.value)} className="w-full border border-slate-300 rounded-md p-2 text-sm bg-white" placeholder="0" />
+                        </td>
+                        <td className="py-3 pr-4">
+                          <input type="number" min="0" value={v.stock} onChange={(e) => handleVariationChange(v.id, 'stock', e.target.value)} className="w-full border border-slate-300 rounded-md p-2 text-sm bg-white" placeholder="0" />
+                        </td>
+                        <td className="py-3 text-right">
+                          <button type="button" onClick={() => handleRemoveVariationRow(v.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Remove Variation">
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <button type="button" onClick={handleAddVariationRow} className="flex items-center text-sm font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-4 py-2.5 rounded-lg transition-colors">
+                <Plus size={16} className="mr-2" /> Add Variation
+              </button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50 border border-gray-200 rounded-2xl p-6">
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Selling Price (UGX) *</label>
+                <input required={!hasVariations} type="number" min="0" value={price} onChange={(e) => setPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white" placeholder="32000" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Original Price (Optional)</label>
+                <input type="number" min="0" value={originalPrice} onChange={(e) => setOriginalPrice(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white" placeholder="e.g. 35000 (Crossed out)" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">Available Stock *</label>
+                <input required={!hasVariations} type="number" min="0" value={stock} onChange={(e) => setStock(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500 bg-white" placeholder="99" />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* --- ROW 4: SETTINGS --- */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 flex items-center cursor-pointer hover:bg-gray-100 transition-colors" onClick={() => setIsFeatured(!isFeatured)}>
             <input type="checkbox" checked={isFeatured} readOnly className="h-5 w-5 rounded border-gray-300 text-blue-600 pointer-events-none" />
             <div className="ml-3">
