@@ -344,8 +344,8 @@ export default function EditProductPage() {
             </select>
           </div>
           <div>
-            <label className="block text-sm font-bold text-gray-700 mb-2">Unit / Size</label>
-            <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 50kg, 1L, Pack of 12" />
+            <label className="block text-sm font-bold text-gray-700 mb-2">Base Unit / Sold By</label>
+            <input type="text" value={unit} onChange={(e) => setUnit(e.target.value)} className="w-full border border-gray-300 rounded-lg p-3 text-sm focus:ring-blue-500 focus:border-blue-500" placeholder="e.g. 1 Kg, Per Piece, Bucket" />
           </div>
         </div>
 
