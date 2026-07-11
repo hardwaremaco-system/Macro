@@ -9,7 +9,7 @@ import { X, LayoutGrid } from 'lucide-react';
 export default function ProductBuyBox({ product }: { product: any }) {
   const addItem = useCartStore((state) => state.addItem);
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
-  
+
   // --- Standard Product State ---
   const [quantity, setQuantity] = useState(1);
   const currentStock = product.stock !== undefined ? product.stock : 99;
@@ -79,7 +79,7 @@ export default function ProductBuyBox({ product }: { product: any }) {
           price: v.price,
           image: product.image,
           stock: v.stock,
-          unit: product.unit, // Or we could use the optionName
+          unit: product.unit, 
         }, qty);
         itemsAdded++;
       }
@@ -99,7 +99,7 @@ export default function ProductBuyBox({ product }: { product: any }) {
 
   return (
     <div className="flex flex-col justify-center pt-2 sm:pt-0 relative">
-      
+
       {/* Product Category & Unit */}
       <div className="flex items-center gap-2 text-sm font-bold text-gray-400 mb-3 tracking-wide uppercase">
         <span>{product.category}</span>
@@ -187,26 +187,26 @@ export default function ProductBuyBox({ product }: { product: any }) {
       )}
 
       {/* ========================================================= */}
-      {/* 1. BOTTOM SHEET OVERLAY (VARIATIONS) */}
+      {/* 1. FULL SCREEN MOBILE OVERLAY (VARIATIONS) */}
       {/* ========================================================= */}
       {isSheetOpen && (
-        <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
-          {/* Dark Backdrop */}
+        <div className="fixed inset-0 z-[60] flex sm:items-center justify-center sm:p-6">
+          {/* Dark Backdrop (Visible primarily on desktop) */}
           <div 
             className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
             onClick={() => setIsSheetOpen(false)}
           />
-          
-          {/* Bottom Sheet Container */}
-          <div className="relative w-full sm:w-[500px] bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[80vh] overflow-hidden animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:fade-in-100 duration-300">
-            
+
+          {/* Sheet Container: Full Screen on Mobile, Large Modal on Desktop */}
+          <div className="relative w-full h-full sm:h-auto sm:max-h-[90vh] sm:w-[550px] bg-white sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-8 sm:slide-in-from-bottom-0 sm:fade-in-100 duration-300">
+
             {/* Sheet Header */}
             <div className="flex justify-between items-center p-5 sm:p-6 border-b border-gray-100 bg-white z-10">
               <div>
-                <h3 className="text-xl font-black text-slate-900">
+                <h3 className="text-xl sm:text-2xl font-black text-slate-900">
                   Choose {product.optionName || 'Type'}
                 </h3>
-                <p className="text-xs text-gray-500 font-bold mt-1">
+                <p className="text-xs sm:text-sm text-gray-500 font-bold mt-1">
                   Adjust quantities below. Any items > 0 will be added.
                 </p>
               </div>
@@ -219,7 +219,7 @@ export default function ProductBuyBox({ product }: { product: any }) {
             </div>
 
             {/* Scrollable Variations List */}
-            <div className="overflow-y-auto p-5 sm:p-6 flex-grow bg-gray-50/50">
+            <div className="overflow-y-auto p-4 sm:p-6 flex-grow bg-gray-50/50">
               <div className="space-y-4">
                 {product.variations?.map((v: any, index: number) => {
                   const qty = varQtys[v.value] || 0;
