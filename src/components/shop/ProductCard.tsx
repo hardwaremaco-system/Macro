@@ -1,7 +1,6 @@
 // src/components/shop/ProductCard.tsx
 import React from 'react';
 import Link from 'next/link';
-import { ShoppingCart, LayoutGrid } from 'lucide-react';
 
 export interface ProductData {
   id: string;
@@ -13,7 +12,6 @@ export interface ProductData {
   stock?: number;
   isPromo?: boolean;
   unit?: string; 
-  // --- NEW VARIATION FIELDS ---
   hasVariations?: boolean;
   optionName?: string;
   variations?: any[];
@@ -50,7 +48,7 @@ export default function ProductCard({ product }: { product: ProductData }) {
         )}
       </div>
 
-      {/* Product Content - Adapts based on Variations */}
+      {/* Product Content */}
       <div className="p-3 sm:p-4 flex flex-col flex-grow text-left">
 
         {product.hasVariations ? (
@@ -58,8 +56,14 @@ export default function ProductCard({ product }: { product: ProductData }) {
              LAYOUT A: PRODUCT WITH VARIATIONS
              ========================================= */
           <>
-            <div className="text-xs sm:text-sm font-bold text-blue-600 mb-1.5 leading-none bg-blue-50 w-max px-2 py-1 rounded-md">
-              {product.variations?.length || 0} {product.optionName || 'Option'}s Available
+            {/* Top Row: Unit on the Left, Variations Badge on the Right */}
+            <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+              <div className="text-xs sm:text-sm font-bold text-gray-400 leading-none">
+                {product.unit || '1 Unit'}
+              </div>
+              <div className="text-[10px] font-bold text-blue-600 leading-none bg-blue-50 px-2 py-1 rounded-md">
+                {product.variations?.length || 0} {product.optionName || 'Option'}s
+              </div>
             </div>
             
             <h3 className="text-base sm:text-lg font-black text-slate-800 line-clamp-2 leading-snug">
@@ -67,17 +71,11 @@ export default function ProductCard({ product }: { product: ProductData }) {
             </h3>
             
             <div className="mt-auto pt-3">
-              <div className="text-[10px] sm:text-xs text-gray-500 font-bold uppercase tracking-wider mb-0.5">
+              <div className="text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-0.5">
                 From
               </div>
               <div className="text-lg sm:text-xl font-black text-amber-500 leading-none">
                 UGX {Number(product.price).toLocaleString()}
-              </div>
-
-              {/* Visual "Choose Type" Button */}
-              <div className="mt-4 w-full bg-slate-100 text-slate-700 font-black py-2.5 rounded-lg text-center text-sm flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                <LayoutGrid size={16} className="mr-2" />
-                Choose {product.optionName || 'Type'}
               </div>
             </div>
           </>
@@ -86,7 +84,7 @@ export default function ProductCard({ product }: { product: ProductData }) {
              LAYOUT B: STANDARD PRODUCT (NO VARIATIONS)
              ========================================= */
           <>
-            <div className="text-sm sm:text-base font-bold text-gray-400 mb-1 leading-none">
+            <div className="text-xs sm:text-sm font-bold text-gray-400 mb-2 leading-none">
               {product.unit || '1 Unit'}
             </div>
             
@@ -95,20 +93,14 @@ export default function ProductCard({ product }: { product: ProductData }) {
             </h3>
             
             <div className="mt-auto pt-3">
-              <div className="text-lg sm:text-xl font-black text-amber-500 leading-none mt-4">
+              <div className="text-lg sm:text-xl font-black text-amber-500 leading-none">
                 UGX {Number(product.price).toLocaleString()}
               </div>
               {product.originalPrice && (
-                <div className="text-xs text-gray-400 line-through mt-1.5 font-medium">
+                <div className="text-xs text-gray-400 line-through mt-1 font-medium">
                   UGX {Number(product.originalPrice).toLocaleString()}
                 </div>
               )}
-
-              {/* Visual "Add to Cart" Button */}
-              <div className="mt-4 w-full bg-slate-900 text-white font-black py-2.5 rounded-lg text-center text-sm flex items-center justify-center group-hover:bg-blue-600 transition-colors">
-                <ShoppingCart size={16} className="mr-2" />
-                Add to Cart
-              </div>
             </div>
           </>
         )}
