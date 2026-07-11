@@ -22,19 +22,22 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   }
 
   const product = snapshot.data();
+  
+  // Format the price string based on variations
+  const pricePrefix = product.hasVariations ? 'From UGX ' : 'UGX ';
+  const priceString = `${pricePrefix}${Number(product.price).toLocaleString()}`;
 
   return {
     title: `${product.title} | Macro Hardware`,
     description: product.description?.substring(0, 160) || `Buy ${product.title} at the best price.`,
     openGraph: {
       title: product.title,
-      description: `UGX ${Number(product.price).toLocaleString()} - ${product.unit || '1 Unit'}`,
-      // Add your actual production domain here once you go live
+      description: `${priceString} - ${product.unit || '1 Unit'}`,
       // url: `https://yourwebsite.com/product/${params.slug}`, 
       siteName: 'Macro Hardware',
       images: [
         {
-          url: product.image, // The image WhatsApp will display
+          url: product.image, 
           width: 800,
           height: 800,
           alt: product.title,
@@ -49,7 +52,6 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 export default async function ProductDetailsPage({ params }: { params: { slug: string } }) {
   const documentId = params.slug;
 
-  // Fetch data directly on the server! No more useEffect or loading spinners.
   const docRef = doc(db, 'products', documentId);
   const docSnap = await getDoc(docRef);
 
@@ -69,10 +71,8 @@ export default async function ProductDetailsPage({ params }: { params: { slug: s
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      
-      {/* Breadcrumb Navigation 
-          (Changed from router.back() to a direct Link so this remains a fast Server Component) 
-      */}
+
+      {/* Breadcrumb Navigation */}
       <div className="mb-6">
         <Link 
           href="/products" 
@@ -82,16 +82,13 @@ export default async function ProductDetailsPage({ params }: { params: { slug: s
         </Link>
       </div>
 
-      {/* Main Content Grid: On Mobile it stacks vertically, on Desktop it sits side-by-side */}
+      {/* Main Content Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
         <ProductGallery image={product.image} images={product.images} title={product.title} />
         <ProductBuyBox product={product} />
       </div>
 
-      {/* Description Section (Updated to pass the whole product object based on our previous step) */}
       <ProductDescription product={product} />
-
-      {/* You Might Also Like Section */}
       <RelatedProducts category={product.category} currentProductId={product.id} />
     </div>
   );
